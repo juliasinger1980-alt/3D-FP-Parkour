@@ -3,6 +3,11 @@ extends CharacterBody3D
 @onready var camera: Camera3D = $head/Camera3D
 @onready var head: Node3D = $head
 
+@onready var fps_label: Label = $"../UI/Transform_repl/VBoxContainer/FPS"
+@onready var velocity_label: Label = $"../UI/Transform_repl/VBoxContainer/Velocity"
+@onready var sprint_toggle_label: Label = $"../UI/Transform_repl/VBoxContainer/Sprint_toggle"
+
+
 #GRAVITY
 var gravity_player := 40
 
@@ -19,6 +24,7 @@ var accel := 12.0
 #JUMP
 var sprungstaerke := 15.0
 var air_control_mult := 0.2
+var air_speed_incr := 4
 var sprungbuffertimer := 0.150
 var koyotebuffertimer := 0.150
 var jump_boost := 5 #for bunny_hop
@@ -30,13 +36,15 @@ var cam_sway_rot_dir: Vector3
 var sway_lerp_str := 5
 var sway_amount_deg_sprint := 2
 var sway_amount_deg_walk := 1
-var orig_cam_rot: Vector3
 var x_rot := 0.0
 var y_rot := 0.0
 var mouse_sensi := 0.0015
 var fov_normal := 100.0
 var fov_sprinting := 110.0
 var cam_fov_lerp_str := 8.0
+var walking_fov_cooldown := 0.050
+@onready var walking_fov_cooldown_max = walking_fov_cooldown
+@onready var orig_cam_rot = camera.rotation
 @onready var original_cam_pos = camera.position
 
 #SLIDE/GP
@@ -47,17 +55,16 @@ var min_slide_speed:= 16.0
 var slide_dampening := 0.999
 var slide_control_mult := 0.2
 var sliding_cam_offset := 0.6
-@onready var sliding_cam_pos = original_cam_pos - Vector3(0, sliding_cam_offset, 0)
 var sliding_cam_lerp_str := 8.0
 var ground_pound_speed := 15
 var slide_cooldown := 0.200
+@onready var sliding_cam_pos = original_cam_pos - Vector3(0, sliding_cam_offset, 0)
 @onready var slide_cooldown_max = slide_cooldown
 
 #DEBUGGING
 var fliegend := false
 
 func _ready() -> void:
-	orig_cam_rot = camera.rotation
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -85,9 +92,10 @@ func _physics_process(delta: float) -> void:
 	cur_speed_set(delta)
 	vel_x_z_set(delta)
 	slide_ground_pound(delta)
-	Debugging()
+	Debugging(delta)
+	Label_text(delta)
 	move_and_slide()
-	#print(slide_cooldown)
+	print(walking_fov_cooldown)
 
 func WASD_Movement(delta):
 	dir = Vector3.ZERO
@@ -122,7 +130,7 @@ func cur_speed_set(delta):
 		cur_speed *= slide_dampening
 		cur_speed = lerp(cur_speed, max_speed * dir, accel * delta * slide_control_mult)
 	elif not is_on_floor():
-		cur_speed = lerp(cur_speed, max_speed * dir, accel * delta * air_control_mult)
+		cur_speed = lerp(cur_speed, (max_speed + air_speed_incr) * dir, accel * delta * air_control_mult)
 	else:
 		cur_speed = lerp(cur_speed, max_speed * dir, accel * delta)
 
@@ -201,11 +209,20 @@ func cam_fov_set(delta):
 		camera.fov = lerp(camera.fov, fov_normal, cam_fov_lerp_str*delta)
 		return
 	if move_input != Vector2.ZERO:
+		walking_fov_cooldown = walking_fov_cooldown_max
 		camera.fov = lerp(camera.fov, fov_sprinting, cam_fov_lerp_str*delta)
 	else:
-		camera.fov = lerp(camera.fov, fov_normal, cam_fov_lerp_str*delta)
+		if walking_fov_cooldown == 0:
+			camera.fov = lerp(camera.fov, fov_normal, cam_fov_lerp_str*delta)
+	walking_fov_cooldown -= delta
+	walking_fov_cooldown = clamp(walking_fov_cooldown, 0, walking_fov_cooldown_max)
 
-func Debugging():
+func Label_text(delta):
+	fps_label.text = "FPS: " + str(Engine.get_frames_per_second())
+	velocity_label.text = "VELOCITY: " + str(int(velocity.length()))
+	sprint_toggle_label.text = "SPRINTING" if sprinting else "WALKING"
+
+func Debugging(delta):
 	#NO-GRAV modus (T)
 	if Input.is_action_just_pressed("T"):
 		if fliegend:
