@@ -53,10 +53,11 @@ material = SubResource("StandardMaterial3D_71j4m")
 [node name="visuals" type="Node3D" parent="." unique_id=1477433064]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7556486, 4.0040293, -37.53407)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="visuals" unique_id=811620187]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="visuals" unique_id=271510189]
 environment = SubResource("Environment_71j4m")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="visuals" unique_id=1171936604]
-transform = Transform3D(-0.8660254, -0.22387956, 0.4470772, 0, 0.89415425, 0.44775906, -0.50000006, 0.3877707, -0.7743603, -1.7556486, -4.0040293, 37.53407)
-light_color = Color(0.9999997, 0.6285812, 0.67847085, 1)
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="visuals" unique_id=27366226]
+transform = Transform3D(-0.9986295, -0.024972606, 0.045993816, 0, 0.87881714, 0.47715878, -0.05233605, 0.47650486, -0.8776127, -1.7556486, -4.0040293, 37.53407)
+light_color = Color(1, 0.7019608, 0.6784314, 1)
+light_energy = 0.7
 shadow_enabled = true

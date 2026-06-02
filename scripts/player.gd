@@ -3,26 +3,29 @@ extends CharacterBody3D
 @onready var camera: Camera3D = $head/Camera3D
 @onready var head: Node3D = $head
 
+#GRAVITY
 var gravity_player := 40
 
+#WASD_MOVEMENT
 var move_input: Vector2
 var cur_speed := Vector3.ZERO
-var target_speed_gehen := 6.0
-var target_speed_sprint := 11.0
-var sliding_speed := 19.5
-var target_speed_grappling := 25.0
+var target_speed_gehen := 9.0
+var target_speed_sprint := 15.0
 var max_speed := 0.0
 var sprinting := false
 var dir := Vector3.ZERO
-var accel := 12
+var accel := 12.0
 
+#JUMP
 var sprungstaerke := 15.0
 var air_control_mult := 0.2
 var sprungbuffertimer := 0.150
 var koyotebuffertimer := 0.150
+var jump_boost := 5 #for bunny_hop
 @onready var sprungbuffertimer_max = sprungbuffertimer
 @onready var koyotebuffertimer_max = koyotebuffertimer
 
+#CAM
 var cam_sway_rot_dir: Vector3
 var sway_lerp_str := 5
 var sway_amount_deg_sprint := 2
@@ -33,9 +36,24 @@ var y_rot := 0.0
 var mouse_sensi := 0.0015
 var fov_normal := 100.0
 var fov_sprinting := 110.0
-var cam_fov_lerp_val := 8
+var cam_fov_lerp_str := 8.0
 @onready var original_cam_pos = camera.position
 
+#SLIDE/GP
+var sliding := false
+var fov_sliding := 120.0
+var sliding_speed := 30.5
+var min_slide_speed:= 16.0
+var slide_dampening := 0.999
+var slide_control_mult := 0.2
+var sliding_cam_offset := 0.6
+@onready var sliding_cam_pos = original_cam_pos - Vector3(0, sliding_cam_offset, 0)
+var sliding_cam_lerp_str := 8.0
+var ground_pound_speed := 15
+var slide_cooldown := 0.200
+@onready var slide_cooldown_max = slide_cooldown
+
+#DEBUGGING
 var fliegend := false
 
 func _ready() -> void:
@@ -65,10 +83,11 @@ func _physics_process(delta: float) -> void:
 	cam_sway(delta)
 	cam_fov_set(delta)
 	cur_speed_set(delta)
-	vel_set(delta)
+	vel_x_z_set(delta)
+	slide_ground_pound(delta)
 	Debugging()
 	move_and_slide()
-	
+	#print(slide_cooldown)
 
 func WASD_Movement(delta):
 	dir = Vector3.ZERO
@@ -86,10 +105,11 @@ func WASD_Movement(delta):
 	dir = dir.normalized()
 
 func sprint_state_set(delta):
-	if Input.is_action_pressed("Shift"):
+	if sprinting:
+		if Input.is_action_just_pressed("Shift"):
+			sprinting = false
+	elif Input.is_action_just_pressed("Shift"):
 		sprinting = true
-	else:
-		sprinting = false
 
 func max_speed_set(delta):
 	if sprinting:
@@ -98,12 +118,15 @@ func max_speed_set(delta):
 		max_speed = target_speed_gehen
 
 func cur_speed_set(delta):
-	if not is_on_floor():
+	if sliding:
+		cur_speed *= slide_dampening
+		cur_speed = lerp(cur_speed, max_speed * dir, accel * delta * slide_control_mult)
+	elif not is_on_floor():
 		cur_speed = lerp(cur_speed, max_speed * dir, accel * delta * air_control_mult)
 	else:
 		cur_speed = lerp(cur_speed, max_speed * dir, accel * delta)
 
-func vel_set(delta):
+func vel_x_z_set(delta):
 	velocity.x = cur_speed.x
 	velocity.z = cur_speed.z
 
@@ -129,7 +152,29 @@ func springen(delta):
 	
 	if (is_on_floor() and sprungbuffertimer > 0) or (not is_on_floor() and koyotebuffertimer > 0 and Input.is_action_just_pressed("Space")):
 		velocity.y = sprungstaerke
+		cur_speed += jump_boost * dir
 		koyotebuffertimer = 0
+
+func slide_ground_pound(delta):
+	if Input.is_action_just_pressed("Ctrl") and (
+		not is_on_floor()
+		or (slide_cooldown == 0 and move_input != Vector2.ZERO)):
+		
+		if not is_on_floor():
+			velocity.y -= ground_pound_speed
+		cur_speed = sliding_speed * dir
+		sliding = true
+	if sliding:
+		if Input.is_action_just_released("Ctrl") or cur_speed.length() <= min_slide_speed:
+			slide_cooldown = slide_cooldown_max
+			sliding = false
+		if is_on_floor():
+			camera.position = lerp(camera.position, sliding_cam_pos, sliding_cam_lerp_str*delta)
+	else:
+		camera.position = lerp(camera.position, original_cam_pos, sliding_cam_lerp_str*delta)
+		
+	slide_cooldown -= delta
+	slide_cooldown = clamp(slide_cooldown, 0, slide_cooldown_max)
 
 func cam_sway(delta):
 	if move_input.x > 0:
@@ -148,11 +193,17 @@ func cam_sway(delta):
 		camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z, sway_lerp_str*delta)
 
 func cam_fov_set(delta):
-	if sprinting:
+	if sliding:
 		if move_input != Vector2.ZERO:
-			camera.fov = lerp(camera.fov, fov_sprinting, cam_fov_lerp_val*delta)
+			camera.fov = lerp(camera.fov, fov_sliding, cam_fov_lerp_str*delta)
+		return
+	if not sprinting:
+		camera.fov = lerp(camera.fov, fov_normal, cam_fov_lerp_str*delta)
+		return
+	if move_input != Vector2.ZERO:
+		camera.fov = lerp(camera.fov, fov_sprinting, cam_fov_lerp_str*delta)
 	else:
-		camera.fov = lerp(camera.fov, fov_normal, cam_fov_lerp_val*delta)
+		camera.fov = lerp(camera.fov, fov_normal, cam_fov_lerp_str*delta)
 
 func Debugging():
 	#NO-GRAV modus (T)
