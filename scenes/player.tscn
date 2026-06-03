@@ -7,6 +7,7 @@
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_3vyb7"]
 
 [sub_resource type="SystemFont" id="SystemFont_3vyb7"]
+subpixel_positioning = 0
 
 [sub_resource type="LabelSettings" id="LabelSettings_3vyb7"]
 font = SubResource("SystemFont_3vyb7")
@@ -33,6 +34,14 @@ mesh = SubResource("CapsuleMesh_3vyb7")
 [node name="Camera3D" type="Camera3D" parent="CharacterBody3D/head" unique_id=800446005]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 fov = 90.0
+
+[node name="WallcheckL" type="RayCast3D" parent="CharacterBody3D" unique_id=32309799]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0, 0.3, 0)
+target_position = Vector3(0, -1.3, 0)
+
+[node name="WallcheckR" type="RayCast3D" parent="CharacterBody3D" unique_id=117939451]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0.3, 0)
+target_position = Vector3(0, -1.3, 0)
 
 [node name="UI" type="Node" parent="." unique_id=375504343]
 

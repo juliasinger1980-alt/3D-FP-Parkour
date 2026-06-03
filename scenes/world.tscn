@@ -45,9 +45,27 @@ material = SubResource("StandardMaterial3D_k0juu")
 [node name="obstacles" type="Node3D" parent="." unique_id=1813605474]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="obstacles" unique_id=39655299]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7556486, 3.3702059, -37.53407)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.105327, 6.92597, -37.53407)
 use_collision = true
-size = Vector3(13.648987, 7.9765396, 1)
+size = Vector3(40.348343, 15.088068, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="obstacles" unique_id=495110865]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.634243, 9.232536, -28.59517)
+use_collision = true
+size = Vector3(40.348343, 15.088068, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="obstacles" unique_id=1320996555]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.786823, 13.162519, -35.63807)
+use_collision = true
+size = Vector3(40.348343, 15.088068, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="obstacles" unique_id=875520311]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.79416, 18.124998, -28.634066)
+use_collision = true
+size = Vector3(40.348343, 15.088068, 1)
 material = SubResource("StandardMaterial3D_71j4m")
 
 [node name="visuals" type="Node3D" parent="." unique_id=1477433064]
