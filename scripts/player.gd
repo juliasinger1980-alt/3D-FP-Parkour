@@ -1,7 +1,9 @@
 extends CharacterBody3D
 
-@onready var camera: Camera3D = $head/Camera3D
+@onready var camera: Camera3D = $head/playercam
 @onready var head: Node3D = $head
+
+@onready var animation_player: AnimationPlayer = $head/playercam/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig/AnimationPlayer
 
 @onready var wallcheck_l: RayCast3D = $WallcheckL
 @onready var wallcheck_r: RayCast3D = $WallcheckR
@@ -85,6 +87,7 @@ var fliegend := false
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	$head/playercam/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -96,6 +99,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		rotation.y += y_rot
 
 func _physics_process(delta: float) -> void:
+	$head/playercam/SubViewportContainer/SubViewport/viewmodel_cam.global_transform = camera.global_transform
 	if is_on_wall():
 		var n = get_wall_normal()
 		if cur_speed.dot(n) < 0:
@@ -115,6 +119,7 @@ func _physics_process(delta: float) -> void:
 	Debugging(delta)
 	Label_text(delta)
 	get_state()
+	animation_handler(delta)
 	move_and_slide()
 	#print(velocity.y)
 
@@ -331,13 +336,20 @@ func get_state() -> String:
 		return "WALLRUNNING"
 	elif sliding:
 		return "SLIDING"
+	elif move_input == Vector2.ZERO:
+		return "IDLE"
 	elif sprinting:
 		return "SPRINTING"
-	elif move_input != Vector2.ZERO:
-		return "WALKING"
 	else:
-		return "IDLE"
+		return "WALKING"
 
+func animation_handler(delta):
+	if get_state() == "SPRINTING":
+		if not animation_player.is_playing():
+			animation_player.play("running")
+	if get_state() == "IDLE":
+		animation_player.stop()
+	
 func Debugging(delta):
 	#NO-GRAV modus (T)
 	if Input.is_action_just_pressed("T"):
