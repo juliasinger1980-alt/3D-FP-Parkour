@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://lolwbd4dx4j6"
-path.s3tc="res://.godot/imported/manikin_hands_both_manikin_hand_metal-manikin_hand_rough.png-4162ad70b972378fb7f4164b0ffe8972.s3tc.ctex"
+uid="uid://cx38dcd3lqfqb"
+path.s3tc="res://.godot/imported/manikin_hands_both_manikin_hand_bcolor.png-6802a2cbe3970f888b04e2391dc2748c.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "f2708a06eac7ea189a8c12e91c3a959d"
+"md5": "ce146a5c7740e6ad155fb79638689732"
 }
 
 [deps]
 
-source_file="res://models/manikin_hands_both_manikin_hand_metal-manikin_hand_rough.png"
-dest_files=["res://.godot/imported/manikin_hands_both_manikin_hand_metal-manikin_hand_rough.png-4162ad70b972378fb7f4164b0ffe8972.s3tc.ctex"]
+source_file="res://models/manikin hands/manikin_hands_both_manikin_hand_bcolor.png"
+dest_files=["res://.godot/imported/manikin_hands_both_manikin_hand_bcolor.png-6802a2cbe3970f888b04e2391dc2748c.s3tc.ctex"]
 
 [params]
 

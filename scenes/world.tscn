@@ -1,25 +1,120 @@
 [gd_scene format=3 uid="uid://dv5nhd61n8csc"]
 
 [ext_resource type="PackedScene" uid="uid://827v3yaulu2k" path="res://scenes/player.tscn" id="1_rwgxs"]
+[ext_resource type="Shader" uid="uid://dj1lj3uugm8yn" path="res://shader/water_wind_waker.gdshader" id="2_4mrxx"]
 [ext_resource type="Texture2D" uid="uid://7o4e8gxfx2rm" path="res://textures/kenney_prototype-textures/PNG/Light/texture_08.png" id="2_4wyf3"]
 [ext_resource type="Texture2D" uid="uid://v7weu8usaw3a" path="res://textures/kenney_prototype-textures/PNG/Orange/texture_05.png" id="3_4wyf3"]
+[ext_resource type="Script" uid="uid://ux7d1k0weu7n" path="res://scripts/respawn.gd" id="3_7r4gi"]
+[ext_resource type="Texture2D" uid="uid://cdvcdm05epkbu" path="res://textures/kenney_prototype-textures/PNG/Dark/texture_04.png" id="3_71j4m"]
+[ext_resource type="Texture2D" uid="uid://cye83qwp5si3d" path="res://textures/kenney_prototype-textures/PNG/Red/texture_01.png" id="5_i7141"]
+[ext_resource type="Texture2D" uid="uid://dqvjkl3i5t605" path="res://textures/kenney_prototype-textures/PNG/Purple/texture_01.png" id="5_qfnet"]
+[ext_resource type="Shader" uid="uid://v4hu7dwb10lb" path="res://shader/sky_AAA.gdshader" id="7_i7141"]
+[ext_resource type="Script" uid="uid://soicc5lhvoj3" path="res://scripts/stange.gd" id="9_e3hyu"]
+[ext_resource type="PackedScene" uid="uid://w07psbgn1sfk" path="res://models/palm tree/palm_tree_-_animated.glb" id="10_w7kh3"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k0juu"]
-albedo_texture = ExtResource("2_4wyf3")
-uv1_scale = Vector3(0.1, 0.1, 0.1)
-uv1_triplanar = true
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7r4gi"]
+render_priority = 0
+shader = ExtResource("2_4mrxx")
+shader_parameter/WATER_COL = Color(0.04, 0.38, 0.88, 1)
+shader_parameter/WATER2_COL = Color(0.04, 0.35, 0.78, 1)
+shader_parameter/FOAM_COL = Color(0.8125, 0.9609, 0.9648, 1)
+shader_parameter/distortion_speed = 2.0
+shader_parameter/tile = Vector2(1000, 1000)
+shader_parameter/height = 2.0
+shader_parameter/wave_size = Vector2(2, 2)
+shader_parameter/wave_speed = 1.5
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w7kh3"]
+size = Vector3(1000, 1, 1000)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_71j4m"]
 albedo_texture = ExtResource("3_4wyf3")
 uv1_scale = Vector3(0.1, 0.1, 0.1)
 uv1_triplanar = true
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_4wyf3"]
-sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
-ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i7141"]
+albedo_texture = ExtResource("3_71j4m")
+uv1_scale = Vector3(0.2, 0.2, 0.2)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4mrxx"]
+albedo_texture = ExtResource("2_4wyf3")
+uv1_scale = Vector3(0.2, 0.2, 0.2)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w7kh3"]
+albedo_texture = ExtResource("5_i7141")
+uv1_scale = Vector3(0.2, 0.2, 0.2)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7r4gi"]
+albedo_texture = ExtResource("5_qfnet")
+uv1_triplanar = true
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_w7kh3"]
+height = 10.0
+radius = 2.0
+
+[sub_resource type="Gradient" id="Gradient_i7141"]
+colors = PackedColorArray(0.7921569, 0.5294118, 0.48235294, 1, 0.7921569, 0.5294118, 0.48235294, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_4mrxx"]
+gradient = SubResource("Gradient_i7141")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_7r4gi"]
+noise_type = 3
+seed = 10
+frequency = 0.0157
+fractal_type = 0
+domain_warp_enabled = true
+domain_warp_type = 2
+domain_warp_amplitude = 21.59
+domain_warp_frequency = 0.23
+domain_warp_fractal_octaves = 10
+domain_warp_fractal_gain = 0.705
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_w7kh3"]
+width = 500
+height = 500
+noise = SubResource("FastNoiseLite_7r4gi")
+seamless = true
+in_3d_space = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4mrxx"]
+shader = ExtResource("7_i7141")
+shader_parameter/base_sky_texture = SubResource("GradientTexture1D_4mrxx")
+shader_parameter/cloud_noise_texture = SubResource("NoiseTexture2D_w7kh3")
+shader_parameter/sky_exposure = 1.0
+shader_parameter/sky_tint = Color(1, 0.78431374, 0.4392157, 1)
+shader_parameter/cloud_scale = 0.27
+shader_parameter/cloud_density = 0.34000001615
+shader_parameter/cloud_softness = 0.25500001141398
+shader_parameter/detail_strength = 0.7850000372875
+shader_parameter/cloud_contrast = 1.5250000486875
+shader_parameter/cloud_bright_color = Color(0.27058825, 1, 1, 1)
+shader_parameter/cloud_mid_color = Color(0.45927924, 0.930344, 0.89737684, 1)
+shader_parameter/cloud_dark_color = Color(0.13743487, 0.6131484, 0.6148998, 1)
+shader_parameter/cloud_brightness = 2.0830000989425
+shader_parameter/atmosphere_blend = 0.17200000817
+shader_parameter/atmosphere_horizon_strength = 1.0
+shader_parameter/atmosphere_zenith_strength = 0.35
+shader_parameter/cloud_direction = Vector2(0, -1)
+shader_parameter/cloud_speed = 0.01
+shader_parameter/cloud_evolution_speed = 0.0410000019475
+shader_parameter/edge_warp_strength = 0.4830000229425
+shader_parameter/edge_warp_scale = 3.38
+shader_parameter/horizon_fade = 0.0
+shader_parameter/zenith_density = 0.8190000389025
+shader_parameter/horizon_blend = 0.3290000156275
+shader_parameter/sun_direction = Vector3(0.4, 0.5, 0.2)
+shader_parameter/sun_color = Color(1, 0.96, 0.88, 1)
+shader_parameter/sun_size = 0.004
+shader_parameter/sun_intensity = 14.0
+shader_parameter/random_light_strength = 0.4
+shader_parameter/random_light_scale = 0.7
 
 [sub_resource type="Sky" id="Sky_k0juu"]
-sky_material = SubResource("ProceduralSkyMaterial_4wyf3")
+sky_material = SubResource("ShaderMaterial_4mrxx")
 
 [sub_resource type="Environment" id="Environment_71j4m"]
 background_mode = 2
@@ -27,46 +122,297 @@ sky = SubResource("Sky_k0juu")
 tonemap_mode = 3
 ssao_enabled = true
 ssil_enabled = true
-sdfgi_use_occlusion = true
+sdfgi_enabled = true
 glow_enabled = true
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.009
+volumetric_fog_albedo = Color(0.99999946, 0.80079997, 0.7883649, 1)
+volumetric_fog_emission = Color(1, 0.8, 0.7882353, 1)
+volumetric_fog_emission_energy = 0.01
+volumetric_fog_gi_inject = 2.3
+volumetric_fog_anisotropy = 0.64
+volumetric_fog_sky_affect = 0.763
 
 [node name="world" type="Node3D" unique_id=1989866258]
 
 [node name="player" parent="." unique_id=1784074218 instance=ExtResource("1_rwgxs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2487981, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -232.39023, 17.439419, 3.1441054)
 
 [node name="outerworld" type="Node3D" parent="." unique_id=1736815395]
 
-[node name="CSGBox3D" type="CSGBox3D" parent="outerworld" unique_id=918338452]
-use_collision = true
-size = Vector3(1000, 1, 1000)
-material = SubResource("StandardMaterial3D_k0juu")
+[node name="CSGBox3D" type="CSGBox3D" parent="outerworld" unique_id=1101610303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -185.67532, 7.6293945e-06, -130.22987)
+size = Vector3(3000, 1, 3000)
+material = SubResource("ShaderMaterial_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="outerworld" unique_id=1608408074]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -196.88324, -6.7059364, 0)
+script = ExtResource("3_7r4gi")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="outerworld/Area3D" unique_id=405543135]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1720428, 6.604225, 0)
+shape = SubResource("BoxShape3D_w7kh3")
+debug_color = Color(0, 0.6784314, 0.7882353, 0.9254902)
 
 [node name="obstacles" type="Node3D" parent="." unique_id=1813605474]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="obstacles" unique_id=39655299]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.105327, 6.92597, -37.53407)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -188.22746, 22.137432, -8.516235)
 use_collision = true
-size = Vector3(40.348343, 15.088068, 1)
+size = Vector3(24.138893, 15.088068, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D15" type="CSGBox3D" parent="obstacles" unique_id=1942756038]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -211.77864, 44.85624, -118.371475)
+use_collision = true
+size = Vector3(208.54108, 60.52568, 1)
 material = SubResource("StandardMaterial3D_71j4m")
 
 [node name="CSGBox3D2" type="CSGBox3D" parent="obstacles" unique_id=495110865]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.634243, 9.232536, -28.59517)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -174.22635, 26.157427, 7.0230675)
 use_collision = true
-size = Vector3(40.348343, 15.088068, 1)
+size = Vector3(26.79966, 15.088068, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D17" type="CSGBox3D" parent="obstacles" unique_id=1165279940]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -226.47313, 21.813166, 23.171724)
+use_collision = true
+size = Vector3(27.291712, 12.787275, 1)
 material = SubResource("StandardMaterial3D_71j4m")
 
 [node name="CSGBox3D3" type="CSGBox3D" parent="obstacles" unique_id=1320996555]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.786823, 13.162519, -35.63807)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -184.63959, 18.845207, 68.49233)
 use_collision = true
-size = Vector3(40.348343, 15.088068, 1)
+size = Vector3(24.106667, 9.728498, 1)
 material = SubResource("StandardMaterial3D_71j4m")
 
 [node name="CSGBox3D4" type="CSGBox3D" parent="obstacles" unique_id=875520311]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.79416, 18.124998, -28.634066)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -177.33315, 22.811342, 74.547485)
 use_collision = true
-size = Vector3(40.348343, 15.088068, 1)
+size = Vector3(27.356789, 9.259482, 1)
 material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="obstacles" unique_id=1834946308]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -184.4491, 28.027527, 79.51022)
+use_collision = true
+size = Vector3(27.356789, 7.8590307, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="obstacles" unique_id=1209575474]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -177.34958, 31.997734, 86.078896)
+use_collision = true
+size = Vector3(24.85564, 10.223197, 1)
+material = SubResource("StandardMaterial3D_71j4m")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="obstacles" unique_id=1892727973]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -226.95766, 6.6549892, 5.3037567)
+use_collision = true
+size = Vector3(34.17383, 17.870178, 35.003143)
+material = SubResource("StandardMaterial3D_i7141")
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="obstacles" unique_id=1713523896]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -177.23846, 6.0033054, 39.8444)
+use_collision = true
+size = Vector3(16.248535, 17.870178, 35.003143)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D12" type="CSGBox3D" parent="obstacles" unique_id=1106780571]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -269.04166, 2.4023666, 4.6075687)
+use_collision = true
+size = Vector3(20.398926, 17.870178, 35.003143)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D16" type="CSGBox3D" parent="obstacles" unique_id=1190982651]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -226.6847, 2.4023666, -250.52934)
+use_collision = true
+size = Vector3(73.37671, 17.870178, 44.053947)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="obstacles" unique_id=1820438658]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -329.8782, 2.4023666, 4.6075683)
+use_collision = true
+size = Vector3(20.398926, 17.870178, 22.64952)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D18" type="CSGBox3D" parent="obstacles" unique_id=2031483431]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -329.8782, 2.4023666, 72.57135)
+use_collision = true
+size = Vector3(20.398926, 17.870178, 22.64952)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D19" type="CSGBox3D" parent="obstacles" unique_id=1119432373]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -272.98056, 2.4023666, 72.57135)
+use_collision = true
+size = Vector3(20.398926, 17.870178, 22.64952)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="obstacles" unique_id=1922662811]
+transform = Transform3D(1, 0, 0, 0, 0.9999934, -0.003630277, 0, 0.003630277, 0.9999934, -180.1513, 27.93615, 116.187225)
+use_collision = true
+size = Vector3(22.074219, 2.4702454, 35.003143)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="obstacles" unique_id=587004420]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -137.89658, 27.93615, 112.597916)
+use_collision = true
+size = Vector3(54.574097, 2.4702454, 15.87999)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="obstacles" unique_id=1463484862]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.17662, 27.93615, 112.597916)
+use_collision = true
+size = Vector3(54.574097, 2.4702454, 15.87999)
+material = SubResource("StandardMaterial3D_4mrxx")
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="obstacles" unique_id=1296475766]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -91.775085, 59.002712, 112.85959)
+use_collision = true
+size = Vector3(6.3660583, 2.4702454, 8.842678)
+material = SubResource("StandardMaterial3D_w7kh3")
+
+[node name="Stange" type="Node3D" parent="obstacles" unique_id=1526843952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -294.74844, 17.904276, -0.07622051)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange" unique_id=1304295986]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange" unique_id=809395176]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange/Area3D" unique_id=695181891]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange2" type="Node3D" parent="obstacles" unique_id=780580429]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -307.82492, 17.904276, -0.07622051)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange2" unique_id=483693694]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange2" unique_id=7421435]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange2/Area3D" unique_id=1321743307]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange3" type="Node3D" parent="obstacles" unique_id=466958527]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -333.29648, 17.904276, 25.210962)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange3" unique_id=1248359569]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange3" unique_id=1953571347]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange3/Area3D" unique_id=235776439]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange4" type="Node3D" parent="obstacles" unique_id=118257819]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -333.29648, 17.904276, 45.529526)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange4" unique_id=30861758]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange4" unique_id=1763989462]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange4/Area3D" unique_id=1392050384]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange5" type="Node3D" parent="obstacles" unique_id=1254509082]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -308.00558, 17.904276, 76.62681)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange5" unique_id=1658327530]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange5" unique_id=395280726]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange5/Area3D" unique_id=1681940675]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange6" type="Node3D" parent="obstacles" unique_id=1803275259]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -295.2133, 17.904276, 76.62681)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange6" unique_id=1471672957]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange6" unique_id=330367329]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange6/Area3D" unique_id=1449232485]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange7" type="Node3D" parent="obstacles" unique_id=971009013]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -268.64682, 17.904276, 49.296684)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange7" unique_id=56140051]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange7" unique_id=1501118393]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange7/Area3D" unique_id=1241799882]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
+
+[node name="Stange8" type="Node3D" parent="obstacles" unique_id=325288970]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -268.64682, 17.904276, 31.702042)
+script = ExtResource("9_e3hyu")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="obstacles/Stange8" unique_id=765366989]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.13748777, -0.31241035, 4.210698)
+radius = 0.1
+height = 10.0
+sides = 32
+material = SubResource("StandardMaterial3D_7r4gi")
+
+[node name="Area3D" type="Area3D" parent="obstacles/Stange8" unique_id=265086536]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.15292263, -0.33548164, 4.1989617)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obstacles/Stange8/Area3D" unique_id=1940641746]
+shape = SubResource("CylinderShape3D_w7kh3")
+debug_color = Color(0.958028, 0.92169714, 0.99735135, 0.8862745)
 
 [node name="visuals" type="Node3D" parent="." unique_id=1477433064]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7556486, 4.0040293, -37.53407)
@@ -79,3 +425,253 @@ transform = Transform3D(-0.9986295, -0.024972606, 0.045993816, 0, 0.87881714, 0.
 light_color = Color(1, 0.7019608, 0.6784314, 1)
 light_energy = 0.7
 shadow_enabled = true
+
+[node name="Spawnpoint" type="Node3D" parent="." unique_id=2072623311]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -226.96777, 19.105898, 7.669162)
+
+[node name="decoration" type="Node3D" parent="." unique_id=1878133228]
+
+[node name="Island" type="Node3D" parent="decoration" unique_id=541418415]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -297.48596, 0, -93.2746)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island" unique_id=1598335906]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island" unique_id=1449861709]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island" unique_id=1514731068]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island" unique_id=151621633 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island" unique_id=83664396 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island" unique_id=1324996829 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island" unique_id=413927831 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island2" type="Node3D" parent="decoration" unique_id=481484561]
+transform = Transform3D(0.5898167, 0, 0.8075372, 0, 1, 0, -0.8075372, 0, 0.5898167, -378.4698, 0, -29.41246)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island2" unique_id=1305936407]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island2" unique_id=941704705]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island2" unique_id=1565243775]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island2" unique_id=1208388948 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island2" unique_id=104407561 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island2" unique_id=1521313197 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island2" unique_id=669530114 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island3" type="Node3D" parent="decoration" unique_id=1065206437]
+transform = Transform3D(-0.70227736, 0, 0.71190345, 0, 1, 0, -0.71190345, 0, -0.70227736, -406.13184, 0, 172.90768)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island3" unique_id=822231905]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island3" unique_id=1696626860]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island3" unique_id=791382270]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island3" unique_id=511223338 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island3" unique_id=631991163 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island3" unique_id=1457688084 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island3" unique_id=72511541 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island4" type="Node3D" parent="decoration" unique_id=336636574]
+transform = Transform3D(0.24063471, 0, -0.97061574, 0, 1, 0, 0.97061574, 0, 0.24063471, -263.48282, 0, 229.33804)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island4" unique_id=2134476516]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island4" unique_id=1581808619]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island4" unique_id=127272621]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island4" unique_id=2059309624 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island4" unique_id=1372112562 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island4" unique_id=1691278940 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island4" unique_id=872163691 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island5" type="Node3D" parent="decoration" unique_id=496729935]
+transform = Transform3D(0.24063471, 0, -0.97061574, 0, 1, 0, 0.97061574, 0, 0.24063471, -207.58301, 0, 171.61246)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island5" unique_id=2076117469]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island5" unique_id=430211306]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island5" unique_id=105621303]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island5" unique_id=933260010 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island5" unique_id=1077514326 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island5" unique_id=1739737022 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island5" unique_id=7056330 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island6" type="Node3D" parent="decoration" unique_id=1080142606]
+transform = Transform3D(0.24063471, 0, -0.97061574, 0, 1, 0, 0.97061574, 0, 0.24063471, -574.95276, 0, 63.009224)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island6" unique_id=1228880323]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island6" unique_id=1570256317]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island6" unique_id=1236878833]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island6" unique_id=854793348 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island6" unique_id=2054521613 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island6" unique_id=290957486 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island6" unique_id=610234052 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island7" type="Node3D" parent="decoration" unique_id=1481642426]
+transform = Transform3D(0.24063471, 0, -0.97061574, 0, 1, 0, 0.97061574, 0, 0.24063471, -313.29395, 0, -330.04166)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island7" unique_id=1911789447]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island7" unique_id=778242373]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island7" unique_id=1121962913]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island7" unique_id=1959269710 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island7" unique_id=1873537143 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island7" unique_id=1436127138 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island7" unique_id=230738331 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island8" type="Node3D" parent="decoration" unique_id=105877795]
+transform = Transform3D(0.9901902, 0, -0.13972612, 0, 1, 0, 0.13972612, 0, 0.9901902, -523.90625, 0, -189.64667)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island8" unique_id=674690415]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island8" unique_id=136139173]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island8" unique_id=26203201]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island8" unique_id=1911992663 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island8" unique_id=1150501659 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island8" unique_id=528503118 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island8" unique_id=1943569190 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[node name="Island9" type="Node3D" parent="decoration" unique_id=1360313237]
+transform = Transform3D(0.9901902, 0, -0.13972612, 0, 1, 0, 0.13972612, 0, 0.9901902, -76.973724, 0, 38.05229)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="decoration/Island9" unique_id=1433713918]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, -0.6835327, 0, 3.8269577)
+radius = 4.5380487
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="decoration/Island9" unique_id=209682609]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 4.508911, 9.536743e-07, -2.124504)
+radius = 3.3088713
+
+[node name="CSGSphere3D3" type="CSGSphere3D" parent="decoration/Island9" unique_id=381022304]
+transform = Transform3D(2.07, 0, 0, 0, 1.509035, 0, 0, 0, 2.07, 4.420868, 9.536743e-07, 2.697342)
+radius = 3.3088713
+
+[node name="Sketchfab_Scene" parent="decoration/Island9" unique_id=1319136481 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.07, 0, 0, 0, 2.07, 0, 0, 0, 2.07, 3.2323914, 6.8306074, 3.3993683)
+
+[node name="Sketchfab_Scene4" parent="decoration/Island9" unique_id=1803226609 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.9104468, 0.55203444, 0.57476115, -0.52862906, 1.9950333, -0.15903893, -0.59635866, 0, 1.9822352, -0.15585327, 5.5368466, 8.51313)
+
+[node name="Sketchfab_Scene2" parent="decoration/Island9" unique_id=501686886 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(2.0203052, -0.45085126, 0, 0.45085126, 2.0203052, 0, 0, 0, 2.07, -4.4428406, 6.24314, 4.6634216)
+
+[node name="Sketchfab_Scene3" parent="decoration/Island9" unique_id=2110621511 instance=ExtResource("10_w7kh3")]
+transform = Transform3D(1.1234474, -0.25070843, -1.7204392, 0.6659973, 1.9541774, 0.15012686, 1.6059929, -0.6350085, 1.1412495, -1.0040283, 7.284852, 0.21579742)
+
+[connection signal="body_entered" from="outerworld/Area3D" to="outerworld/Area3D" method="_on_body_entered"]

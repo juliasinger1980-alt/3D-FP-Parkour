@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dra0tfmoxkh15"
-path.s3tc="res://.godot/imported/manikin_hands_both_manikin_hand_norm.png-7a7c5a1a204c2f6686438bf3ecf48e1e.s3tc.ctex"
+uid="uid://b8sowmofjipls"
+path.s3tc="res://.godot/imported/palm_tree_-_animated_2.jpg-f644e4191ac2239536fb86dca4173c6c.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "92ad3b304b1a25a25584ee03ae9e2ee0"
+"md5": "e3f93508070e5969bb4fc41039b83cbd"
 }
 
 [deps]
 
-source_file="res://models/manikin_hands_both_manikin_hand_norm.png"
-dest_files=["res://.godot/imported/manikin_hands_both_manikin_hand_norm.png-7a7c5a1a204c2f6686438bf3ecf48e1e.s3tc.ctex"]
+source_file="res://models/palm tree/palm_tree_-_animated_2.jpg"
+dest_files=["res://.godot/imported/palm_tree_-_animated_2.jpg-f644e4191ac2239536fb86dca4173c6c.s3tc.ctex"]
 
 [params]
 
@@ -30,7 +30,7 @@ compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=1
-roughness/src_normal="res://models/manikin_hands_both_manikin_hand_norm.png"
+roughness/src_normal="res://models/palm_tree_-_animated_2.jpg"
 process/channel_remap/red=0
 process/channel_remap/green=1
 process/channel_remap/blue=2

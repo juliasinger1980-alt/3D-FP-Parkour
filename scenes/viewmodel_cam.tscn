@@ -1,8 +1,8 @@
 [gd_scene format=4 uid="uid://cs1b3jurdxxx5"]
 
-[ext_resource type="Texture2D" uid="uid://cx38dcd3lqfqb" path="res://models/manikin_hands_both_manikin_hand_bcolor.png" id="1_votux"]
-[ext_resource type="Texture2D" uid="uid://lolwbd4dx4j6" path="res://models/manikin_hands_both_manikin_hand_metal-manikin_hand_rough.png" id="2_u5vu0"]
-[ext_resource type="Texture2D" uid="uid://dra0tfmoxkh15" path="res://models/manikin_hands_both_manikin_hand_norm.png" id="3_lps1d"]
+[ext_resource type="Texture2D" uid="uid://cx38dcd3lqfqb" path="res://models/manikin hands/manikin_hands_both_manikin_hand_bcolor.png" id="1_votux"]
+[ext_resource type="Texture2D" uid="uid://lolwbd4dx4j6" path="res://models/manikin hands/manikin_hands_both_manikin_hand_metal-manikin_hand_rough.png" id="2_u5vu0"]
+[ext_resource type="Texture2D" uid="uid://dra0tfmoxkh15" path="res://models/manikin hands/manikin_hands_both_manikin_hand_norm.png" id="3_lps1d"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v6mp8"]
 resource_name = "manikin_hand"

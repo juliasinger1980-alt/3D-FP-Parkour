@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cx38dcd3lqfqb"
-path.s3tc="res://.godot/imported/manikin_hands_both_manikin_hand_bcolor.png-4ed85db9ed29fa98652b1974c45496a8.s3tc.ctex"
+uid="uid://820hqphtb1jn"
+path.s3tc="res://.godot/imported/palm_tree_-_animated_0.jpg-6d54df9287825479ec944e91a0ce42c7.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "ce146a5c7740e6ad155fb79638689732"
+"md5": "ed040594b5973e9f7f346f6cd3299302"
 }
 
 [deps]
 
-source_file="res://models/manikin_hands_both_manikin_hand_bcolor.png"
-dest_files=["res://.godot/imported/manikin_hands_both_manikin_hand_bcolor.png-4ed85db9ed29fa98652b1974c45496a8.s3tc.ctex"]
+source_file="res://models/palm tree/palm_tree_-_animated_0.jpg"
+dest_files=["res://.godot/imported/palm_tree_-_animated_0.jpg-6d54df9287825479ec944e91a0ce42c7.s3tc.ctex"]
 
 [params]
 

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c0ur8db22dat8"
-path="res://.godot/imported/manikin_hands_both.glb-451589c1bee4bf6f5c8212378a8fa34a.scn"
+uid="uid://w07psbgn1sfk"
+path="res://.godot/imported/palm_tree_-_animated.glb-dbacefa17790bba579202cde7f9c4a4e.scn"
 
 [deps]
 
-source_file="res://models/manikin_hands_both.glb"
-dest_files=["res://.godot/imported/manikin_hands_both.glb-451589c1bee4bf6f5c8212378a8fa34a.scn"]
+source_file="res://models/palm tree/palm_tree_-_animated.glb"
+dest_files=["res://.godot/imported/palm_tree_-_animated.glb-dbacefa17790bba579202cde7f9c4a4e.scn"]
 
 [params]
 

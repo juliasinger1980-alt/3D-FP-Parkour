@@ -28,7 +28,7 @@ shader_parameter/sampling_count = 6
 
 [node name="player" type="Node3D" unique_id=1784074218]
 
-[node name="CharacterBody3D" type="CharacterBody3D" parent="." unique_id=458184088]
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." unique_id=458184088 groups=["player"]]
 script = ExtResource("1_3vyb7")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D" unique_id=33567185]
@@ -46,19 +46,22 @@ cull_mask = 1048573
 fov = 90.0
 near = 0.01
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="CharacterBody3D/head/playercam" unique_id=1845941932]
+[node name="CanvasLayer" type="CanvasLayer" parent="CharacterBody3D/head/playercam" unique_id=382215241]
+layer = 4
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CharacterBody3D/head/playercam/CanvasLayer" unique_id=1845941932]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SubViewport" type="SubViewport" parent="CharacterBody3D/head/playercam/SubViewportContainer" unique_id=54400573]
+[node name="SubViewport" type="SubViewport" parent="CharacterBody3D/head/playercam/CanvasLayer/SubViewportContainer" unique_id=54400573]
 transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 4
 
-[node name="viewmodel_cam" parent="CharacterBody3D/head/playercam/SubViewportContainer/SubViewport" unique_id=818467169 instance=ExtResource("2_g2els")]
+[node name="viewmodel_cam" parent="CharacterBody3D/head/playercam/CanvasLayer/SubViewportContainer/SubViewport" unique_id=818467169 instance=ExtResource("2_g2els")]
 cull_mask = 2
 
 [node name="WallcheckL" type="RayCast3D" parent="CharacterBody3D" unique_id=32309799]

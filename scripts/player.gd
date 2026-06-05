@@ -3,7 +3,10 @@ extends CharacterBody3D
 @onready var camera: Camera3D = $head/playercam
 @onready var head: Node3D = $head
 
-@onready var animation_player: AnimationPlayer = $head/playercam/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig/AnimationPlayer
+@onready var animation_player: AnimationPlayer = $head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig/AnimationPlayer
+@onready var hands: Node3D = $head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig
+@onready var swinging_hands: PackedScene = preload("res://scenes/swinging_hands.tscn")
+var instantiation_swinging_hands
 
 @onready var wallcheck_l: RayCast3D = $WallcheckL
 @onready var wallcheck_r: RayCast3D = $WallcheckR
@@ -14,6 +17,11 @@ extends CharacterBody3D
 
 @onready var radial_blur: ColorRect = $"../visuals/CanvasLayer/RadialBlur"
 @onready var radial_blur_shader_material: ShaderMaterial = radial_blur.material
+
+@onready var spawnpoint: Node3D = $"../../Spawnpoint"
+
+#WORLD
+@onready var world = get_tree().current_scene
 
 #GRAVITY
 var gravity_player := 50
@@ -64,13 +72,14 @@ var slide_dampening := 0.999
 var slide_control_mult := 0.2
 var sliding_cam_offset := 0.6
 var sliding_cam_lerp_str := 8.0
-var ground_pound_speed := 20.0
+var ground_pound_speed := 25.0
 var slide_cooldown := 0.200
 var sway_amount_deg_slide := 6.0
 @onready var sliding_cam_pos = original_cam_pos - Vector3(0, sliding_cam_offset, 0)
 @onready var slide_cooldown_max = slide_cooldown
 
 #WALLRUN
+var last_wall
 var wallrunningL := false
 var wallrunningR := false
 var wallrun_boost := 4.0
@@ -82,10 +91,29 @@ var sway_amount_deg_wallrunning := 4.0
 var wallrun_lerp_str := 3.0
 var gravity_wallrun := 28
 var min_wallrun_speed := 4
-var wallrun_jump_off_boost := 8
+var wallrun_jump_off_boost := 16
 var wallrun_jump_off_str := 20
 var just_wallran_L := false
 var just_wallran_R := false
+var fov_wallruning := 120.0
+
+#SWINGING
+var swinging := false
+var swing_jump_off_boost := 12
+var swing_jump_off_str := 15
+var desired_dist_swing := 5
+var dist_swing: float
+var dir_stange_to_player: Vector3
+var swing_lerp_str := 12.0
+var stange
+var stange_pos: Vector3
+var stangen_pos_change_counter_links := 0
+var stangen_pos_change_counter_rechts := 0
+var max_rutsch_int := 10
+var rutsch_amount := 0.3
+var fov_swinging := 110.0
+var swinging_cooldown := 0.200
+@onready var swinging_cooldown_max = swinging_cooldown
 
 #POST PROCESSING
 var Radial_Blur
@@ -95,8 +123,9 @@ var blur_str: float
 var fliegend := false
 
 func _ready() -> void:
+	EventBus.swing_triggered.connect(_on_swing_entered)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	$head/playercam/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
+	$head/playercam/CanvasLayer/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -108,7 +137,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		rotation.y += y_rot
 
 func _physics_process(delta: float) -> void:
-	$head/playercam/SubViewportContainer/SubViewport/viewmodel_cam.global_transform = camera.global_transform
+	$head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam.global_transform = camera.global_transform
 	if is_on_wall():
 		var n = get_wall_normal()
 		if cur_speed.dot(n) < 0:
@@ -125,13 +154,14 @@ func _physics_process(delta: float) -> void:
 	vel_x_z_set(delta)
 	slide_ground_pound(delta)
 	wallrun(delta)
+	swing(delta)
 	Debugging(delta)
 	Label_text(delta)
 	get_state()
 	animation_handler(delta)
 	post_processing(delta)
 	move_and_slide()
-	#print(velocity.y)
+	#print(swinging_cooldown)
 
 func WASD_Movement(delta):
 	dir = Vector3.ZERO
@@ -140,9 +170,9 @@ func WASD_Movement(delta):
 		dir += -global_transform.basis.z
 	if Input.is_action_pressed("S"):
 		dir += global_transform.basis.z
-	if Input.is_action_pressed("A"):
+	if Input.is_action_pressed("A") and not swinging:
 		dir += -global_transform.basis.x
-	if Input.is_action_pressed("D"):
+	if Input.is_action_pressed("D") and not swinging:
 		dir += global_transform.basis.x
 	
 	move_input = Input.get_vector("A","D","W","S")
@@ -232,14 +262,16 @@ func slide_ground_pound(delta):
 	slide_cooldown = clamp(slide_cooldown, 0, slide_cooldown_max)
 
 func wallrun(delta):
+	if swinging:
+		return
+	
 	if is_on_floor():
 		wallrunningL = false
 		wallrunningR = false
-		just_wallran_L = false
-		just_wallran_R = false
+		last_wall = null
 		return
 	
-	if (not just_wallran_L) and ((not wallrunningL and not wallrunningR) and (not is_on_floor() and wallcheck_l.is_colliding())):
+	if (not wallcheck_l.get_collider() == last_wall and ((not wallrunningL and not wallrunningR) and (not is_on_floor() and wallcheck_l.is_colliding()))):
 		wall_L_normal = wallcheck_l.get_collision_normal()
 		wall_dir = Vector3.UP.cross(wallcheck_l.get_collision_normal().normalized())
 		if velocity.dot(wall_dir) < 0:
@@ -250,7 +282,7 @@ func wallrun(delta):
 				velocity.y = 6
 			wallrunningL = true
 			
-	if (not just_wallran_R) and ((not wallrunningL and not wallrunningR) and (not is_on_floor() and wallcheck_r.is_colliding())):
+	if  (not wallcheck_r.get_collider() == last_wall and ((not wallrunningL and not wallrunningR) and (not is_on_floor() and wallcheck_r.is_colliding()))):
 		wall_R_normal = wallcheck_r.get_collision_normal()
 		wall_dir = Vector3.UP.cross(wallcheck_r.get_collision_normal().normalized())
 		if velocity.dot(wall_dir) < 0:
@@ -268,40 +300,74 @@ func wallrun(delta):
 	if wallrunningL:
 		if not wallcheck_l.is_colliding() or is_on_floor() or cur_speed.length() < min_wallrun_speed:
 			wallrunningL = false
-			just_wallran_L = true
-			just_wallran_R = false
+			return
 		if Input.is_action_just_pressed("Space"):
 			wallrunningL = false
-			just_wallran_L = true
-			just_wallran_R = false
-			velocity.x += (wallrun_jump_off_boost * dir).x
-			velocity.z += (wallrun_jump_off_boost * dir).z
+			cur_speed += wallrun_jump_off_boost * dir
 			velocity.y = wallrun_jump_off_str
+			return
 		if velocity.length() < target_speed_wallrun:
 			velocity.x = lerp(velocity.x , target_speed_wallrun * wall_dir.x, wallrun_lerp_str * delta)
 			velocity.z = lerp(velocity.z , target_speed_wallrun * wall_dir.z, wallrun_lerp_str * delta)
 		cur_speed.x = velocity.x
 		cur_speed.z = velocity.z
 		camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z - deg_to_rad(sway_amount_deg_wallrunning), sway_lerp_str*delta)
+		last_wall = wallcheck_l.get_collider()
 		
 	if wallrunningR:
 		if not wallcheck_r.is_colliding() or is_on_floor() or cur_speed.length() < min_wallrun_speed:
 			wallrunningR = false
-			just_wallran_R = true
-			just_wallran_L = false
+			return
 		if Input.is_action_just_pressed("Space"):
 			wallrunningR = false
-			just_wallran_R = true
-			just_wallran_L = false
-			velocity.x += (wallrun_jump_off_boost * dir).x
-			velocity.z += (wallrun_jump_off_boost * dir).z
+			cur_speed += wallrun_jump_off_boost * dir
 			velocity.y = wallrun_jump_off_str
+			return
 		if velocity.length() < target_speed_wallrun:
 			velocity.x = lerp(velocity.x , target_speed_wallrun * wall_dir.x, wallrun_lerp_str * delta)
 			velocity.z = lerp(velocity.z , target_speed_wallrun * wall_dir.z, wallrun_lerp_str * delta)
 		cur_speed.x = velocity.x
 		cur_speed.z = velocity.z
 		camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z + deg_to_rad(sway_amount_deg_wallrunning), sway_lerp_str*delta)
+		last_wall = wallcheck_r.get_collider()
+
+func swing(delta):
+	if swinging:
+		if Input.is_action_just_pressed("Space"):
+			swinging = false
+			cur_speed += wallrun_jump_off_boost * dir
+			velocity.y = wallrun_jump_off_str
+			swinging_cooldown = swinging_cooldown_max
+			return
+		
+		if Input.is_action_pressed("A"):
+			if not stangen_pos_change_counter_links == max_rutsch_int:
+				stange_pos.z += rutsch_amount
+				stangen_pos_change_counter_links += 1
+				stangen_pos_change_counter_rechts -= 1
+		if Input.is_action_pressed("D"):
+			if not stangen_pos_change_counter_rechts == max_rutsch_int:
+				stange_pos.z -= rutsch_amount
+				stangen_pos_change_counter_links -= 1
+				stangen_pos_change_counter_rechts += 1
+		dir_stange_to_player = (global_position - stange_pos).normalized()
+		dist_swing = (global_position - stange_pos).length()
+		#if dist_swing > desired_dist_swing:
+		global_position = lerp(global_position, stange_pos + (dir_stange_to_player * desired_dist_swing), swing_lerp_str*delta)
+		velocity.y = velocity.slide(dir_stange_to_player).y
+		velocity.y = -10
+		
+	swinging_cooldown -= delta
+	swinging_cooldown = clamp(swinging_cooldown, 0, swinging_cooldown_max)
+
+func _on_swing_entered(trigger):
+	if swinging or swinging_cooldown != 0:
+		return
+	stangen_pos_change_counter_rechts = 0
+	stangen_pos_change_counter_links = 0
+	stange = trigger
+	stange_pos = trigger.get_global_position()
+	swinging = true
 
 func cam_sway(delta):
 	if not wallrunningL and not wallrunningR and not sliding:
@@ -321,8 +387,10 @@ func cam_sway(delta):
 			camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z, sway_lerp_str_else*delta)
 
 func cam_fov_set(delta):
+	if swinging:
+		camera.fov = lerp(camera.fov, fov_swinging, cam_fov_lerp_str*delta)
 	if wallrunningL or wallrunningR:
-		camera.fov = lerp(camera.fov, fov_sliding, cam_fov_lerp_str*delta)
+		camera.fov = lerp(camera.fov, fov_wallruning, cam_fov_lerp_str*delta)
 		return
 	if sliding:
 		if move_input != Vector2.ZERO:
@@ -346,7 +414,9 @@ func Label_text(delta):
 	sprint_toggle_label.text = get_state()
 
 func get_state() -> String:
-	if wallrunningL:
+	if swinging:
+		return "SWINGING"
+	elif wallrunningL:
 		return "WALLRUNNING_LEFT"
 	elif wallrunningR:
 		return "WALLRUNNING_RIGHT"
@@ -364,6 +434,20 @@ func get_state() -> String:
 		return "WALKING"
 
 func animation_handler(delta):
+	if get_state() == "SWINGING":
+		animation_player.stop()
+		hands.visible = false
+		if not instantiation_swinging_hands:
+			swinging_hands.instantiate()
+			instantiation_swinging_hands = swinging_hands.instantiate()
+			world.add_child(instantiation_swinging_hands)
+		instantiation_swinging_hands.global_position = stange_pos
+		instantiation_swinging_hands.global_rotation = stange.global_rotation
+	else:
+		if instantiation_swinging_hands:
+			instantiation_swinging_hands.queue_free()
+		hands.visible = true
+	
 	if get_state() == "WALLRUNNING_LEFT":
 		if not animation_player.current_animation == "wallrunning_left":
 			animation_player.play("wallrunning_left")
@@ -395,7 +479,7 @@ func animation_handler(delta):
 
 func post_processing(delta):
 	#radial blur
-	blur_str = velocity.length() * 0.00035
+	blur_str = velocity.length() * 0.0002
 	#print(radial_blur_shader_material.get_shader_parameter("blur_power"))
 	radial_blur_shader_material.set_shader_parameter("blur_power", blur_str)
 
@@ -409,3 +493,7 @@ func Debugging(delta):
 	if fliegend:
 		if Input.is_action_just_pressed("G"):
 			velocity.y += 50
+			
+	#Spawn Teleport
+	if Input.is_action_just_pressed("R"):
+		global_position = spawnpoint.global_position
