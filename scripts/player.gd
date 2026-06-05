@@ -106,13 +106,16 @@ var dist_swing: float
 var dir_stange_to_player: Vector3
 var swing_lerp_str := 12.0
 var stange
+var stange_local_pos: Vector3
 var stange_pos: Vector3
 var stangen_pos_change_counter_links := 0
 var stangen_pos_change_counter_rechts := 0
 var max_rutsch_int := 10
 var rutsch_amount := 0.3
 var fov_swinging := 110.0
-var swinging_cooldown := 0.200
+var behind_bar := false
+var infront_bar := false
+var swinging_cooldown := 0.100
 @onready var swinging_cooldown_max = swinging_cooldown
 
 #POST PROCESSING
@@ -342,12 +345,20 @@ func swing(delta):
 		
 		if Input.is_action_pressed("A"):
 			if not stangen_pos_change_counter_links == max_rutsch_int:
-				stange_pos.z += rutsch_amount
+				#NOT GOOD
+				if infront_bar:
+					stange_pos.z += rutsch_amount
+				elif behind_bar:
+					stange_pos.z -= rutsch_amount
 				stangen_pos_change_counter_links += 1
 				stangen_pos_change_counter_rechts -= 1
 		if Input.is_action_pressed("D"):
 			if not stangen_pos_change_counter_rechts == max_rutsch_int:
-				stange_pos.z -= rutsch_amount
+				#NOT GOOD
+				if infront_bar:
+					stange_pos.z -= rutsch_amount
+				elif behind_bar:
+					stange_pos.z += rutsch_amount
 				stangen_pos_change_counter_links -= 1
 				stangen_pos_change_counter_rechts += 1
 		dir_stange_to_player = (global_position - stange_pos).normalized()
@@ -356,7 +367,7 @@ func swing(delta):
 		global_position = lerp(global_position, stange_pos + (dir_stange_to_player * desired_dist_swing), swing_lerp_str*delta)
 		velocity.y = velocity.slide(dir_stange_to_player).y
 		velocity.y = -10
-		
+	
 	swinging_cooldown -= delta
 	swinging_cooldown = clamp(swinging_cooldown, 0, swinging_cooldown_max)
 
@@ -365,8 +376,21 @@ func _on_swing_entered(trigger):
 		return
 	stangen_pos_change_counter_rechts = 0
 	stangen_pos_change_counter_links = 0
+	infront_bar = false
+	behind_bar = false
+	#var from = trigger.global_position
+	#var to = global_position
+	#var space = get_world_3d().direct_space_state
+	#var parameters = PhysicsRayQueryParameters3D.create(from,to)
+	#var result = space.intersect_ray(parameters)
+	if trigger.to_local(global_position).x > 0:
+		infront_bar = true
+	if trigger.to_local(global_position).x < 0:
+		behind_bar = true
+	print(trigger.to_local(global_position))
 	stange = trigger
 	stange_pos = trigger.get_global_position()
+	stange_local_pos = trigger.get_position()
 	swinging = true
 
 func cam_sway(delta):
@@ -442,7 +466,12 @@ func animation_handler(delta):
 			instantiation_swinging_hands = swinging_hands.instantiate()
 			world.add_child(instantiation_swinging_hands)
 		instantiation_swinging_hands.global_position = stange_pos
-		instantiation_swinging_hands.global_rotation = stange.global_rotation
+		if behind_bar:
+			instantiation_swinging_hands.global_rotation = stange.global_rotation + Vector3(0,deg_to_rad(180),0)
+			#print("behind")
+		else:
+			instantiation_swinging_hands.global_rotation = stange.global_rotation + Vector3(0,0,0)
+			#print("infront")
 	else:
 		if instantiation_swinging_hands:
 			instantiation_swinging_hands.queue_free()
