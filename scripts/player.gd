@@ -342,23 +342,21 @@ func swing(delta):
 			velocity.y = wallrun_jump_off_str
 			swinging_cooldown = swinging_cooldown_max
 			return
-		
+		print(stange.global_transform.basis.z.z)
 		if Input.is_action_pressed("A"):
 			if not stangen_pos_change_counter_links == max_rutsch_int:
-				#NOT GOOD
 				if infront_bar:
-					stange_pos.z += rutsch_amount
-				elif behind_bar:
-					stange_pos.z -= rutsch_amount
+					stange_pos += rutsch_amount * stange.global_transform.basis.y
+				if behind_bar:
+					stange_pos -= rutsch_amount * stange.global_transform.basis.y
 				stangen_pos_change_counter_links += 1
 				stangen_pos_change_counter_rechts -= 1
 		if Input.is_action_pressed("D"):
 			if not stangen_pos_change_counter_rechts == max_rutsch_int:
-				#NOT GOOD
 				if infront_bar:
-					stange_pos.z -= rutsch_amount
-				elif behind_bar:
-					stange_pos.z += rutsch_amount
+					stange_pos -= rutsch_amount * stange.global_transform.basis.y
+				if behind_bar:
+					stange_pos += rutsch_amount * stange.global_transform.basis.y
 				stangen_pos_change_counter_links -= 1
 				stangen_pos_change_counter_rechts += 1
 		dir_stange_to_player = (global_position - stange_pos).normalized()
