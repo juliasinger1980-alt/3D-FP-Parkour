@@ -6,10 +6,13 @@ extends CharacterBody3D
 @onready var animation_player: AnimationPlayer = $head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig/AnimationPlayer
 @onready var hands: Node3D = $head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig
 @onready var swinging_hands: PackedScene = preload("res://scenes/swinging_hands.tscn")
+@onready var vaulting_hands: PackedScene = preload("res://scenes/vaulting_hands.tscn")
 var instantiation_swinging_hands
+var instantiation_vaulting_hands
 
 @onready var wallcheck_l: RayCast3D = $WallcheckL
 @onready var wallcheck_r: RayCast3D = $WallcheckR
+@onready var vault_ray: RayCast3D = $VaultRay
 
 @onready var fps_label: Label = $"../UI/CanvasLayer/Transform_repl/VBoxContainer/FPS"
 @onready var velocity_label: Label = $"../UI/CanvasLayer/Transform_repl/VBoxContainer/Velocity"
@@ -113,10 +116,23 @@ var stangen_pos_change_counter_rechts := 0
 var max_rutsch_int := 10
 var rutsch_amount := 0.3
 var fov_swinging := 110.0
+var swing_gravity:= -5
 var behind_bar := false
 var infront_bar := false
 var swinging_cooldown := 0.100
 @onready var swinging_cooldown_max = swinging_cooldown
+
+#vaulting
+var vaulting := false
+var vault_collider
+var vault_global_pos: Vector3
+var vault_lerp_str_y := 11.0
+var vault_lerp_str_xz:= 11.0
+var vault_min_y_dif := 0.5
+var vault_min_dif := 0.5
+var Menschenhoehe := 1.5
+var vault_timer := 0.160
+@onready var vault_timer_max = vault_timer
 
 #POST PROCESSING
 var Radial_Blur
@@ -151,6 +167,7 @@ func _physics_process(delta: float) -> void:
 	sprint_state_set(delta)
 	max_speed_set(delta)
 	grav(delta)
+	hand_sway(delta)
 	cam_sway(delta)
 	cam_fov_set(delta)
 	cur_speed_set(delta)
@@ -158,6 +175,7 @@ func _physics_process(delta: float) -> void:
 	slide_ground_pound(delta)
 	wallrun(delta)
 	swing(delta)
+	vault(delta)
 	Debugging(delta)
 	Label_text(delta)
 	get_state()
@@ -195,7 +213,7 @@ func max_speed_set(delta):
 		max_speed = target_speed_gehen
 
 func cur_speed_set(delta):
-	if not wallrunningL and not wallrunningR:
+	if not wallrunningL and not wallrunningR and not vaulting:
 		if sliding:
 			cur_speed *= slide_dampening
 			cur_speed = lerp(cur_speed, max_speed * dir, accel * delta * slide_control_mult)
@@ -210,7 +228,7 @@ func vel_x_z_set(delta):
 		velocity.z = cur_speed.z
 
 func grav(delta):
-	if not fliegend:
+	if not fliegend and not vaulting:
 		if wallrunningL or wallrunningR:
 			velocity.y -= gravity_wallrun * delta
 		elif not is_on_floor():
@@ -364,7 +382,7 @@ func swing(delta):
 		#if dist_swing > desired_dist_swing:
 		global_position = lerp(global_position, stange_pos + (dir_stange_to_player * desired_dist_swing), swing_lerp_str*delta)
 		velocity.y = velocity.slide(dir_stange_to_player).y
-		velocity.y = -10
+		velocity.y = swing_gravity
 	
 	swinging_cooldown -= delta
 	swinging_cooldown = clamp(swinging_cooldown, 0, swinging_cooldown_max)
@@ -391,6 +409,35 @@ func _on_swing_entered(trigger):
 	stange_local_pos = trigger.get_position()
 	swinging = true
 
+func vault(delta):
+	if vault_ray.is_colliding():
+		if not vaulting and vault_ray.get_collider().is_in_group("block"):
+			vault_collider = vault_ray.get_collider()
+			vault_global_pos = vault_ray.get_collision_point()
+			#print("START VAULT... ")
+			vault_timer = vault_timer_max
+			vaulting = true
+	
+	if vaulting:
+		velocity.y = 0
+		if vault_timer == 0:
+			#print("ZEIT AUS!!!")
+			vaulting = false
+			return
+		if (vault_global_pos + Vector3(0,Menschenhoehe,0) - global_position).length() < vault_min_dif:
+			#print("passt schon")
+			vaulting = false
+			return
+		#print("vault_point: ", vault_global_pos + Vector3(0,Menschenhoehe,0), "  player: ", global_position, "  diff: ", (vault_global_pos + Vector3(0,Menschenhoehe,0) - global_position).length())
+		global_position.y = lerp(global_position.y, vault_global_pos.y + Menschenhoehe, vault_lerp_str_y * delta)
+		#if vault_global_pos.y - global_position.y < vault_min_y_dif:
+			#print("hoch genug")
+		global_position.x = lerp(global_position.x, vault_global_pos.x, vault_lerp_str_xz * delta)
+		global_position.z = lerp(global_position.z, vault_global_pos.z, vault_lerp_str_xz * delta)
+	
+	vault_timer -= delta
+	vault_timer = clamp(vault_timer, 0, vault_timer_max)
+
 func cam_sway(delta):
 	if not wallrunningL and not wallrunningR and not sliding:
 		if move_input.x > 0:
@@ -407,6 +454,9 @@ func cam_sway(delta):
 		
 		else:
 			camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z, sway_lerp_str_else*delta)
+
+func hand_sway(delta):
+	pass
 
 func cam_fov_set(delta):
 	if swinging:
@@ -436,7 +486,9 @@ func Label_text(delta):
 	sprint_toggle_label.text = get_state()
 
 func get_state() -> String:
-	if swinging:
+	if vaulting:
+		return "VAULTING"
+	elif swinging:
 		return "SWINGING"
 	elif wallrunningL:
 		return "WALLRUNNING_LEFT"
@@ -456,6 +508,20 @@ func get_state() -> String:
 		return "WALKING"
 
 func animation_handler(delta):
+	if get_state() == "VAULTING":
+		animation_player.stop()
+		print("check")
+		hands.visible = false
+		if not instantiation_vaulting_hands:
+			vaulting_hands.instantiate()
+			instantiation_vaulting_hands = vaulting_hands.instantiate()
+			world.add_child(instantiation_vaulting_hands)
+		instantiation_vaulting_hands.global_position = vault_global_pos
+		instantiation_vaulting_hands.global_rotation = global_rotation
+	else:
+		if instantiation_vaulting_hands:
+			instantiation_vaulting_hands.queue_free()
+	
 	if get_state() == "SWINGING":
 		animation_player.stop()
 		hands.visible = false
@@ -473,6 +539,7 @@ func animation_handler(delta):
 	else:
 		if instantiation_swinging_hands:
 			instantiation_swinging_hands.queue_free()
+	if get_state() != "SWINGING" and get_state() != "VAULTING":
 		hands.visible = true
 	
 	if get_state() == "WALLRUNNING_LEFT":

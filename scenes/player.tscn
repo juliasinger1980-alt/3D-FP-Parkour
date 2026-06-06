@@ -72,6 +72,10 @@ target_position = Vector3(0, -1.3, 0)
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0.3, 0)
 target_position = Vector3(0, -1.3, 0)
 
+[node name="VaultRay" type="RayCast3D" parent="CharacterBody3D" unique_id=55906994]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3416976, -1.3356102)
+debug_shape_custom_color = Color(0.89411765, 0.89411765, 0, 1)
+
 [node name="UI" type="Node" parent="." unique_id=375504343]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="UI" unique_id=283057447]
