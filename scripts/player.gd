@@ -13,6 +13,7 @@ var instantiation_vaulting_hands
 @onready var wallcheck_l: RayCast3D = $WallcheckL
 @onready var wallcheck_r: RayCast3D = $WallcheckR
 @onready var vault_ray: RayCast3D = $VaultRay
+@onready var grappling_ray: RayCast3D = $head/playercam/GrapplingRay
 
 @onready var fps_label: Label = $"../UI/CanvasLayer/Transform_repl/VBoxContainer/FPS"
 @onready var velocity_label: Label = $"../UI/CanvasLayer/Transform_repl/VBoxContainer/Velocity"
@@ -40,8 +41,10 @@ var dir := Vector3.ZERO
 var accel := 12.0
 
 #JUMP
-var sprungstaerke := 20.0
+var jumpstrength := 20.0
 var air_control_mult := 0.2
+var airbonus_per_frame := 1.0 #for bunny_hop
+var bunny_hop_control_multiplier := 1.0
 var air_speed_incr := 4
 var sprungbuffertimer := 0.150
 var koyotebuffertimer := 0.150
@@ -50,6 +53,7 @@ var jump_boost := 5 #for bunny_hop
 @onready var koyotebuffertimer_max = koyotebuffertimer
 
 #CAM
+var mouse_input: Vector2
 var cam_sway_rot_dir: Vector3
 var sway_lerp_str := 5
 var sway_amount_deg_sprint := 2
@@ -116,9 +120,12 @@ var stangen_pos_change_counter_rechts := 0
 var max_rutsch_int := 10
 var rutsch_amount := 0.3
 var fov_swinging := 110.0
-var swing_gravity:= -5
+var swing_gravity:= -8
 var behind_bar := false
 var infront_bar := false
+var swinging_jump_off_boost := 16
+var swinging_jump_off_str := 20
+var max_swinging_jump_off_speed := 35.0
 var swinging_cooldown := 0.100
 @onready var swinging_cooldown_max = swinging_cooldown
 
@@ -133,6 +140,33 @@ var vault_min_dif := 0.5
 var Menschenhoehe := 1.5
 var vault_timer := 0.160
 @onready var vault_timer_max = vault_timer
+
+#grappling hook
+var grappling := false
+var grappling_point: Vector3
+var dir_grappling_point_to_player: Vector3
+var dir_player_to_grappling_point: Vector3
+var distance_grappling_point_to_player: float
+var spring_power := 1.0
+var spring_power_current: float
+var original_distance_grappling_point_to_player: float
+var grappling_grav := -30.0
+var grappling_jump_off_boost := 5.0
+var grappling_jump_off_str := 20.0
+var distance_player_to_grappling_point: float
+var final_target_distance: float
+var target_difference := 4.0
+var max_speed_grappling := 85.0
+var max_grapple_jump_off_speed := 35.0
+var grappling_lerp_str := 11.0
+var grappling_control_mult := 0.05
+var grappling_cooldown := 0.200
+@onready var grappling_cooldown_max = grappling_cooldown
+
+#HAND-SWAY
+var sway: Vector2
+var sway_amount := 0.008
+var hand_sway_lerp_str := 4.0
 
 #POST PROCESSING
 var Radial_Blur
@@ -151,9 +185,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		x_rot = -event.relative.y * mouse_sensi
 		camera.rotation.x += x_rot
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-89), deg_to_rad(89))
-		
 		y_rot = -event.relative.x * mouse_sensi
 		rotation.y += y_rot
+		
+		mouse_input = event.relative
 
 func _physics_process(delta: float) -> void:
 	$head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam.global_transform = camera.global_transform
@@ -163,7 +198,7 @@ func _physics_process(delta: float) -> void:
 			cur_speed = cur_speed.slide(n)
 	
 	WASD_Movement(delta)
-	springen(delta)
+	jump(delta)
 	sprint_state_set(delta)
 	max_speed_set(delta)
 	grav(delta)
@@ -176,13 +211,14 @@ func _physics_process(delta: float) -> void:
 	wallrun(delta)
 	swing(delta)
 	vault(delta)
+	grappling_hook(delta)
 	Debugging(delta)
 	Label_text(delta)
 	get_state()
 	animation_handler(delta)
 	post_processing(delta)
 	move_and_slide()
-	#print(swinging_cooldown)
+	#print(dir)
 
 func WASD_Movement(delta):
 	dir = Vector3.ZERO
@@ -217,8 +253,14 @@ func cur_speed_set(delta):
 		if sliding:
 			cur_speed *= slide_dampening
 			cur_speed = lerp(cur_speed, max_speed * dir, accel * delta * slide_control_mult)
+		elif grappling:
+			cur_speed = lerp(cur_speed, (max_speed_grappling) * dir, accel * delta * grappling_control_mult)
 		elif not is_on_floor():
-			cur_speed = lerp(cur_speed, (max_speed + air_speed_incr) * dir, accel * delta * air_control_mult)
+			if cur_speed.length() < (max_speed + air_speed_incr) or swinging:
+				cur_speed = lerp(cur_speed, (max_speed + air_speed_incr) * dir, accel * delta * air_control_mult)
+			else:
+				#print("airbonus")
+				cur_speed = lerp(cur_speed, (cur_speed.length() + airbonus_per_frame) * dir, accel * delta * air_control_mult * bunny_hop_control_multiplier)
 		else:
 			cur_speed = lerp(cur_speed, max_speed * dir, accel * delta)
 
@@ -228,13 +270,14 @@ func vel_x_z_set(delta):
 		velocity.z = cur_speed.z
 
 func grav(delta):
-	if not fliegend and not vaulting:
+	if not fliegend and not vaulting and not grappling and not swinging:
 		if wallrunningL or wallrunningR:
 			velocity.y -= gravity_wallrun * delta
 		elif not is_on_floor():
+			#print("schwnaz")
 			velocity.y -= gravity_player * delta
 
-func springen(delta):
+func jump(delta):
 	if wallrunningL or wallrunningR:
 		return
 	if Input.is_action_just_pressed("Space"):
@@ -252,12 +295,14 @@ func springen(delta):
 	sprungbuffertimer = clamp(sprungbuffertimer, 0, koyotebuffertimer_max)
 	
 	if (is_on_floor() and sprungbuffertimer > 0) or (not is_on_floor() and koyotebuffertimer > 0 and Input.is_action_just_pressed("Space")):
-		velocity.y = sprungstaerke
+		velocity.y = jumpstrength
 		cur_speed += jump_boost * dir
 		koyotebuffertimer = 0
 
 func slide_ground_pound(delta):
 	if wallrunningL or wallrunningR:
+		return
+	if grappling:
 		return
 	
 	if Input.is_action_just_pressed("Ctrl") and (
@@ -356,11 +401,15 @@ func swing(delta):
 	if swinging:
 		if Input.is_action_just_pressed("Space"):
 			swinging = false
-			cur_speed += wallrun_jump_off_boost * dir
-			velocity.y = wallrun_jump_off_str
+			cur_speed += swinging_jump_off_boost * dir
+			velocity.y = swinging_jump_off_str
+			cur_speed.x = clamp(cur_speed.x,-max_swinging_jump_off_speed, max_swinging_jump_off_speed)
+			cur_speed.z = clamp(cur_speed.z,-max_swinging_jump_off_speed, max_swinging_jump_off_speed)
+			velocity.x = clamp(velocity.x,-max_swinging_jump_off_speed, max_swinging_jump_off_speed)
+			velocity.z = clamp(velocity.z,-max_swinging_jump_off_speed, max_swinging_jump_off_speed)
 			swinging_cooldown = swinging_cooldown_max
 			return
-		print(stange.global_transform.basis.z.z)
+		#print(stange.global_transform.basis.z.z)
 		if Input.is_action_pressed("A"):
 			if not stangen_pos_change_counter_links == max_rutsch_int:
 				if infront_bar:
@@ -410,6 +459,8 @@ func _on_swing_entered(trigger):
 	swinging = true
 
 func vault(delta):
+	if grappling:
+		return
 	if vault_ray.is_colliding():
 		if not vaulting and vault_ray.get_collider().is_in_group("block"):
 			vault_collider = vault_ray.get_collider()
@@ -438,6 +489,57 @@ func vault(delta):
 	vault_timer -= delta
 	vault_timer = clamp(vault_timer, 0, vault_timer_max)
 
+func grappling_hook(delta):
+	if not grappling and grappling_cooldown == 0 and grappling_ray.is_colliding():
+		if grappling_ray.get_collider().is_in_group("grappable") and Input.is_action_just_pressed("RC"):
+			grappling_point = grappling_ray.get_collision_point()
+			original_distance_grappling_point_to_player = (global_position - grappling_point).length()
+			final_target_distance = original_distance_grappling_point_to_player - target_difference
+			grappling = true
+		
+	if grappling:
+		if is_on_floor():
+			grappling = false
+			cur_speed.x = clamp(cur_speed.x,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			cur_speed.z = clamp(cur_speed.z,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			velocity.x = clamp(velocity.x,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			velocity.z = clamp(velocity.z,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			return
+		if Input.is_action_just_released("RC"):
+			grappling = false
+			velocity.y = 0
+			cur_speed.x = clamp(cur_speed.x,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			cur_speed.z = clamp(cur_speed.z,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			velocity.x = clamp(velocity.x,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			velocity.z = clamp(velocity.z,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			grappling_cooldown = grappling_cooldown_max
+			return
+		if Input.is_action_just_pressed("Space"):
+			grappling = false
+			cur_speed += grappling_jump_off_boost * -global_transform.basis.z
+			velocity.y = grappling_jump_off_str
+			cur_speed.x = clamp(cur_speed.x,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			cur_speed.z = clamp(cur_speed.z,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			velocity.x = clamp(velocity.x,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			velocity.z = clamp(velocity.z,-max_grapple_jump_off_speed, max_grapple_jump_off_speed)
+			grappling_cooldown = grappling_cooldown_max
+			return
+		
+		dir_grappling_point_to_player = (global_position - grappling_point).normalized()
+		dir_player_to_grappling_point = (grappling_point - global_position).normalized()
+		distance_grappling_point_to_player = (global_position - grappling_point).length() #einfach das gleiche lol
+		distance_player_to_grappling_point = (grappling_point - global_position).length() #voll lol
+		
+		#spring_power_current = (distance_grappling_point_to_player - final_target_distance) * spring_power
+		if distance_grappling_point_to_player > final_target_distance:
+			global_position = lerp(global_position, grappling_point + dir_grappling_point_to_player * final_target_distance, grappling_lerp_str * delta)
+		
+		velocity.y = velocity.slide(dir_grappling_point_to_player).y
+		velocity.y = grappling_grav
+	
+	grappling_cooldown -= delta
+	grappling_cooldown = clamp(grappling_cooldown, 0, grappling_cooldown_max)
+
 func cam_sway(delta):
 	if not wallrunningL and not wallrunningR and not sliding:
 		if move_input.x > 0:
@@ -456,7 +558,13 @@ func cam_sway(delta):
 			camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z, sway_lerp_str_else*delta)
 
 func hand_sway(delta):
-	pass
+	if not get_state() == "IDLE" and not wallrunningL and not wallrunningR:
+		sway.x = lerp(sway.x, -mouse_input.x * sway_amount, sway_lerp_str * delta)
+		sway.y = lerp(sway.x, -mouse_input.y * sway_amount, sway_lerp_str * delta)
+		
+		hands.rotation.y = -sway.x
+	else:
+		hands.rotation = Vector3.ZERO
 
 func cam_fov_set(delta):
 	if swinging:
@@ -486,7 +594,9 @@ func Label_text(delta):
 	sprint_toggle_label.text = get_state()
 
 func get_state() -> String:
-	if vaulting:
+	if grappling:
+		return "GRAPPLING"
+	elif vaulting:
 		return "VAULTING"
 	elif swinging:
 		return "SWINGING"
@@ -508,9 +618,11 @@ func get_state() -> String:
 		return "WALKING"
 
 func animation_handler(delta):
+	if get_state() == "GRAPPLING":
+		pass
 	if get_state() == "VAULTING":
 		animation_player.stop()
-		print("check")
+		#print("check")
 		hands.visible = false
 		if not instantiation_vaulting_hands:
 			vaulting_hands.instantiate()
@@ -539,9 +651,12 @@ func animation_handler(delta):
 	else:
 		if instantiation_swinging_hands:
 			instantiation_swinging_hands.queue_free()
+
+
 	if get_state() != "SWINGING" and get_state() != "VAULTING":
 		hands.visible = true
-	
+
+
 	if get_state() == "WALLRUNNING_LEFT":
 		if not animation_player.current_animation == "wallrunning_left":
 			animation_player.play("wallrunning_left")
@@ -573,7 +688,10 @@ func animation_handler(delta):
 
 func post_processing(delta):
 	#radial blur
-	blur_str = velocity.length() * 0.0002
+	if grappling:
+		blur_str = 40 * 0.0002 #to prevent crazy radial blur
+	else:
+		blur_str = velocity.length() * 0.0002
 	#print(radial_blur_shader_material.get_shader_parameter("blur_power"))
 	radial_blur_shader_material.set_shader_parameter("blur_power", blur_str)
 

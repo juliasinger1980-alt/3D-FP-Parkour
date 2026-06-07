@@ -306,54 +306,6 @@ use_collision = true
 size = Vector3(6.3660583, 2.4702454, 8.842678)
 material = SubResource("StandardMaterial3D_w7kh3")
 
-[node name="CSGBox3D26" type="CSGBox3D" parent="obstacles" unique_id=1643280767 groups=["block"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -226.3526, 15.058205, -235.19128)
-use_collision = true
-size = Vector3(54.574097, 2.4702454, 15.87999)
-material = SubResource("StandardMaterial3D_4mrxx")
-
-[node name="CSGBox3D33" type="CSGBox3D" parent="obstacles" unique_id=1666427745 groups=["block"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -64.76567, 15.058205, -353.86694)
-use_collision = true
-size = Vector3(54.574097, 2.4702454, 53.771084)
-material = SubResource("StandardMaterial3D_4mrxx")
-
-[node name="CSGBox3D27" type="CSGBox3D" parent="obstacles" unique_id=1092058041 groups=["block", "grappable"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -226.09091, 46.124767, -186.5928)
-use_collision = true
-size = Vector3(6.3660583, 2.4702454, 8.842678)
-material = SubResource("StandardMaterial3D_w7kh3")
-
-[node name="CSGBox3D28" type="CSGBox3D" parent="obstacles" unique_id=1713514695 groups=["block", "grappable"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -226.09091, 46.124767, -288.78043)
-use_collision = true
-size = Vector3(6.3660583, 2.4702454, 8.842678)
-material = SubResource("StandardMaterial3D_w7kh3")
-
-[node name="CSGBox3D29" type="CSGBox3D" parent="obstacles" unique_id=772093122 groups=["block", "grappable"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -226.09091, 46.124767, -330.34076)
-use_collision = true
-size = Vector3(6.3660583, 2.4702454, 8.842678)
-material = SubResource("StandardMaterial3D_w7kh3")
-
-[node name="CSGBox3D30" type="CSGBox3D" parent="obstacles" unique_id=848356527 groups=["block", "grappable"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -181.74205, 46.124767, -329.29474)
-use_collision = true
-size = Vector3(6.3660583, 2.4702454, 8.842678)
-material = SubResource("StandardMaterial3D_w7kh3")
-
-[node name="CSGBox3D31" type="CSGBox3D" parent="obstacles" unique_id=1414944596 groups=["block", "grappable"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -151.90004, 46.124767, -354.60974)
-use_collision = true
-size = Vector3(6.3660583, 2.4702454, 8.842678)
-material = SubResource("StandardMaterial3D_w7kh3")
-
-[node name="CSGBox3D32" type="CSGBox3D" parent="obstacles" unique_id=533290156 groups=["block", "grappable"]]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -114.40206, 46.124767, -354.60974)
-use_collision = true
-size = Vector3(6.3660583, 2.4702454, 8.842678)
-material = SubResource("StandardMaterial3D_w7kh3")
-
 [node name="Stange" type="Node3D" parent="obstacles" unique_id=1526843952]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -294.74844, 17.904276, -0.07622051)
 script = ExtResource("9_e3hyu")
