@@ -75,7 +75,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6)
 target_position = Vector3(0, 0, -50)
 
 [node name="grappling_start_point" type="Node3D" parent="CharacterBody3D/head/playercam" unique_id=158960255]
-transform = Transform3D(1, -1.1920929e-07, -2.682209e-07, -3.5762787e-07, 0.99999964, -1.4901161e-07, -2.9802322e-08, -8.940697e-08, 0.99999976, -2.4563613, -0.44942465, -1.6182896)
+transform = Transform3D(1, -1.1920929e-07, -2.682209e-07, -3.5762787e-07, 0.99999964, -1.4901161e-07, -2.9802322e-08, -8.940697e-08, 0.99999976, -0.8721651, -0.44942462, -1.8633091)
 
 [node name="WallcheckL" type="RayCast3D" parent="CharacterBody3D" unique_id=32309799]
 transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0, 0.3, 0)

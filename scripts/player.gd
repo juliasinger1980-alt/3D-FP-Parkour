@@ -188,7 +188,7 @@ func _ready() -> void:
 	mesh = ImmediateMesh.new()
 	EventBus.swing_triggered.connect(_on_swing_entered)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	$head/playercam/CanvasLayer/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
+	#$head/playercam/CanvasLayer/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
