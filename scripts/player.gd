@@ -7,6 +7,7 @@ extends CharacterBody3D
 @onready var hands: Node3D = $head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam/fp_rig
 @onready var swinging_hands: PackedScene = preload("res://scenes/swinging_hands.tscn")
 @onready var vaulting_hands: PackedScene = preload("res://scenes/vaulting_hands.tscn")
+@onready var grappling_start_point_node: Node3D = $head/playercam/grappling_start_point
 var instantiation_swinging_hands
 var instantiation_vaulting_hands
 
@@ -162,11 +163,19 @@ var grappling_lerp_str := 11.0
 var grappling_control_mult := 0.05
 var grappling_cooldown := 0.200
 @onready var grappling_cooldown_max = grappling_cooldown
+##VISUALS
+var rope_points: Array
+var rope_gravity := 4
+var rope_thickness := 0.02
+var mesh: ImmediateMesh
+var point_count: float
+var grappling_start_point: Vector3 
 
 #HAND-SWAY
 var sway: Vector2
 var sway_amount := 0.008
 var hand_sway_lerp_str := 4.0
+var desired_rope_point_distance
 
 #POST PROCESSING
 var Radial_Blur
@@ -176,6 +185,7 @@ var blur_str: float
 var fliegend := false
 
 func _ready() -> void:
+	mesh = ImmediateMesh.new()
 	EventBus.swing_triggered.connect(_on_swing_entered)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	$head/playercam/CanvasLayer/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
@@ -191,6 +201,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		mouse_input = event.relative
 
 func _physics_process(delta: float) -> void:
+	grappling_start_point = grappling_start_point_node.global_position
 	$head/playercam/CanvasLayer/SubViewportContainer/SubViewport/viewmodel_cam.global_transform = camera.global_transform
 	if is_on_wall():
 		var n = get_wall_normal()
@@ -212,6 +223,7 @@ func _physics_process(delta: float) -> void:
 	swing(delta)
 	vault(delta)
 	grappling_hook(delta)
+	grappling_visuals(delta)
 	Debugging(delta)
 	Label_text(delta)
 	get_state()
@@ -495,6 +507,15 @@ func grappling_hook(delta):
 			grappling_point = grappling_ray.get_collision_point()
 			original_distance_grappling_point_to_player = (global_position - grappling_point).length()
 			final_target_distance = original_distance_grappling_point_to_player - target_difference
+			rope_points.clear()
+			point_count = original_distance_grappling_point_to_player
+			generate_points(delta)
+			desired_rope_point_distance = original_distance_grappling_point_to_player/3 / point_count
+			var l = []
+			for i in rope_points:
+				l.append(i.pos) 
+			print("grappling_point: ", grappling_point, "  player: ", global_position, "  rope points: ", l)
+			
 			grappling = true
 		
 	if grappling:
@@ -540,6 +561,70 @@ func grappling_hook(delta):
 	grappling_cooldown -= delta
 	grappling_cooldown = clamp(grappling_cooldown, 0, grappling_cooldown_max)
 
+func generate_points(delta):
+	point_count = int(point_count)
+	for i in range(point_count):
+		var t = float(i) / max(point_count -1, 1)
+		var temp_pos = lerp(grappling_start_point, grappling_point, t)
+		rope_points.append(ropepoint.new(temp_pos))
+
+func grappling_visuals(delta):
+	if grappling:
+		$grappling_visuals.visible = true
+		#$grappling_visuals.global_transform = Transform3D.IDENTITY
+		#GRAVITY
+		for i in rope_points:
+			var temp = i.prev_pos
+			i.prev_pos = i.pos
+			i.pos += (i.pos - temp) + Vector3.DOWN * rope_gravity * delta * delta
+			
+		#CONSTRAINTS
+		rope_points[0].pos = grappling_start_point
+		rope_points[0].prev_pos = grappling_start_point
+		rope_points[rope_points.size()-1].pos = grappling_point
+		for j in range(8):
+			for i in range(1, len(rope_points)):
+				var error = (rope_points[i].pos - rope_points[i-1].pos).length() - desired_rope_point_distance
+				if error > 0:
+					var a = error/2
+					var dir_i_to_i_1 = (rope_points[i-1].pos - rope_points[i].pos).normalized()
+					var dir_i_1_to_i = (rope_points[i].pos - rope_points[i-1].pos).normalized()
+					rope_points[i].pos += dir_i_to_i_1 * a
+					rope_points[i-1].pos += dir_i_1_to_i * a 
+				rope_points[0].pos = grappling_start_point
+				rope_points[rope_points.size()-1].pos = grappling_point
+		
+		#IMMEDIATE MESH
+		mesh.clear_surfaces()
+		mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+		for i in range(1, len(rope_points)):
+			var p0 = $grappling_visuals.to_local(rope_points[i-1].pos)
+			var p1 = $grappling_visuals.to_local(rope_points[i].pos)
+			var mid = (p0 + p1) * 0.5
+			var mid_world = $grappling_visuals.to_global(mid)
+			var to_cam = (camera.global_position - mid_world).normalized()
+			var direction = (p1 - p0).normalized()
+			var side = direction.cross(to_cam).normalized()
+			side *= rope_thickness
+			var v0 = p0 + side
+			var v1 = p0 - side
+			var v2 = p1 + side
+			var v3 = p1 - side
+
+			mesh.surface_add_vertex(v0)
+			mesh.surface_add_vertex(v1)
+			mesh.surface_add_vertex(v2)
+
+			mesh.surface_add_vertex(v2)
+			mesh.surface_add_vertex(v1)
+			mesh.surface_add_vertex(v3)
+			
+		mesh.surface_end()
+		$grappling_visuals.mesh = mesh
+	
+	else:
+		$grappling_visuals.visible = false
+
 func cam_sway(delta):
 	if not wallrunningL and not wallrunningR and not sliding:
 		if move_input.x > 0:
@@ -558,7 +643,7 @@ func cam_sway(delta):
 			camera.rotation.z = lerp(camera.rotation.z, orig_cam_rot.z, sway_lerp_str_else*delta)
 
 func hand_sway(delta):
-	if not get_state() == "IDLE" and not wallrunningL and not wallrunningR:
+	if not grappling and not get_state() == "IDLE" and not wallrunningL and not wallrunningR:
 		sway.x = lerp(sway.x, -mouse_input.x * sway_amount, sway_lerp_str * delta)
 		sway.y = lerp(sway.x, -mouse_input.y * sway_amount, sway_lerp_str * delta)
 		
@@ -619,7 +704,10 @@ func get_state() -> String:
 
 func animation_handler(delta):
 	if get_state() == "GRAPPLING":
-		pass
+		if animation_player.current_animation != "grappling_hold":
+			animation_player.play("grappling")
+			await animation_player.animation_finished
+			animation_player.play("grappling_hold")
 	if get_state() == "VAULTING":
 		animation_player.stop()
 		#print("check")
@@ -709,3 +797,11 @@ func Debugging(delta):
 	#Spawn Teleport
 	if Input.is_action_just_pressed("R"):
 		global_position = spawnpoint.global_position
+
+class ropepoint:
+	var pos: Vector3
+	var prev_pos: Vector3
+	
+	func _init(position = Vector3.ZERO) -> void:
+		pos = position
+		prev_pos = position

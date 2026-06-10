@@ -360,6 +360,111 @@ tracks/3/keys = {
 "values": [Vector3(0.7348856, 1.9899364, -0.2563928), Vector3(0.7348856, 1.9899364, -0.25639287), Vector3(0.73488545, 1.9899364, -0.25639293), Vector3(0.73488545, 1.9899365, -0.25639293)]
 }
 
+[sub_resource type="Animation" id="Animation_cjcw8"]
+resource_name = "grappling"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("HAND_R:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.56666666),
+"transitions": PackedFloat32Array(1.4142139, 1.4142139),
+"update": 0,
+"values": [Vector3(2.5435238, -0.7373884, -3.0309134), Vector3(2.5435238, -4.5484834, -3.0309134)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("HAND_R:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.56666666),
+"transitions": PackedFloat32Array(1.4142139, 1.4142139),
+"update": 0,
+"values": [Vector3(-0.5519464, 1.3839827, 2.7936), Vector3(-0.5519463, 0.8848011, 2.7936)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("HAND_L:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.13333334, 0.3, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector3(-3.501492, -0.8709302, -3.3564177), Vector3(-3.501492, -0.59195447, -3.3564177), Vector3(-3.501492, -0.591954, -3.3564177), Vector3(-3.1644876, -0.28973103, -3.3564177)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("HAND_L:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.13333334, 0.3, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector3(0.40063787, 1.7197381, -0.65696806), Vector3(0.40063787, 1.7197381, -0.6569681), Vector3(0.14332396, 1.2058126, -0.5508607), Vector3(-0.3502145, 0.98607445, -0.4845225)]
+}
+
+[sub_resource type="Animation" id="Animation_yufaf"]
+resource_name = "grappling_hold"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("HAND_R:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1.4142139),
+"update": 0,
+"values": [Vector3(2.5435238, -4.5484834, -3.0309134)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("HAND_R:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1.4142139),
+"update": 0,
+"values": [Vector3(-0.5519463, 0.8848011, 2.7936)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("HAND_L:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.099999994, 0.73333335, 1.4666667, 2.2333333),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector3(-3.1644876, -0.28973103, -3.3564177), Vector3(-3.0436146, -0.28973103, -3.3564177), Vector3(-3.0436141, -0.35501432, -3.3564177), Vector3(-3.2286458, -0.35501432, -3.3564177)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("HAND_L:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.1, 0.73333335, 1.4666667, 2.2333333),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector3(-0.3502145, 0.98607445, -0.4845225), Vector3(-0.3502145, 0.9860745, -0.48452246), Vector3(-0.35021448, 0.8778292, -0.48452246), Vector3(-0.36173192, 0.8742605, -0.4742825)]
+}
+
 [sub_resource type="Animation" id="Animation_lps1d"]
 resource_name = "idle"
 length = 0.5
@@ -864,6 +969,8 @@ tracks/3/keys = {
 _data = {
 &"RESET": SubResource("Animation_u5vu0"),
 &"falling": SubResource("Animation_4ihyt"),
+&"grappling": SubResource("Animation_cjcw8"),
+&"grappling_hold": SubResource("Animation_yufaf"),
 &"idle": SubResource("Animation_lps1d"),
 &"idle_hold": SubResource("Animation_7gq7l"),
 &"jumping": SubResource("Animation_5avfy"),
@@ -967,21 +1074,21 @@ bones/11/parent = 10
 bones/11/rest = Transform3D(0.99999994, 3.4673505e-08, -1.6869642e-15, -3.46735e-08, 1, -2.8140243e-10, 1.677207e-15, 2.8140246e-10, 0.99999994, 4.0099724e-08, 0.3130286, -1.4894397e-10)
 bones/11/enabled = true
 bones/11/position = Vector3(4.0099724e-08, 0.3130286, -1.4894397e-10)
-bones/11/rotation = Quaternion(1.4070123e-10, -8.4104284e-16, -1.7336752e-08, 1)
+bones/11/rotation = Quaternion(0, 0, 0, 1)
 bones/11/scale = Vector3(0.99999994, 1, 0.99999994)
 bones/12/name = "Bone.012"
 bones/12/parent = 11
 bones/12/rest = Transform3D(0.99995095, 0.009900507, -1.1353267e-07, -0.009900506, 0.999951, -2.7674187e-06, 8.612826e-08, 2.7684075e-06, 0.99999994, -6.971902e-09, 0.3188796, -6.531309e-11)
 bones/12/enabled = true
 bones/12/position = Vector3(-6.971902e-09, 0.3188796, -6.531309e-11)
-bones/12/rotation = Quaternion(1.3839735e-06, -4.991585e-08, -0.0049503143, 0.9999877)
+bones/12/rotation = Quaternion(0, 0, 0, 1)
 bones/12/scale = Vector3(0.99999994, 1, 0.99999994)
 bones/13/name = "Bone.013"
 bones/13/parent = 12
 bones/13/rest = Transform3D(0.99995095, -0.009900505, 8.6136545e-08, 0.009900504, 0.999951, 2.768057e-06, -1.1353749e-07, -2.7670687e-06, 0.99999994, -1.6545926e-08, 0.29548988, 2.6375346e-11)
 bones/13/enabled = true
 bones/13/position = Vector3(-1.6545926e-08, 0.29548988, 2.6375346e-11)
-bones/13/rotation = Quaternion(-1.3837983e-06, 4.9919127e-08, 0.0049503134, 0.9999877)
+bones/13/rotation = Quaternion(0, 0, 0, 1)
 bones/13/scale = Vector3(0.99999994, 1, 0.99999994)
 bones/14/name = "Bone.014"
 bones/14/parent = 1
@@ -1002,21 +1109,21 @@ bones/16/parent = 15
 bones/16/rest = Transform3D(0.99899167, 0.04489576, -2.2677129e-07, -0.04489576, 0.99899167, -1.2544238e-05, -3.3664045e-07, 1.2541769e-05, 1.0000001, -1.1970707e-07, 0.3252045, -4.5838533e-10)
 bones/16/enabled = true
 bones/16/position = Vector3(-1.1970707e-07, 0.3252045, -4.5838533e-10)
-bones/16/rotation = Quaternion(6.2730837e-06, 2.7474226e-08, -0.022453543, 0.9997479)
+bones/16/rotation = Quaternion(0, 0, 0, 1)
 bones/16/scale = Vector3(1, 1, 1.0000001)
 bones/17/name = "Bone.017"
 bones/17/parent = 16
 bones/17/rest = Transform3D(0.9999587, 0.009090529, -6.8302897e-09, -0.00909053, 0.9999586, -2.540114e-06, -1.6260977e-08, 2.5400714e-06, 0.99999994, -1.7049388e-08, 0.32181835, 6.8212103e-12)
 bones/17/enabled = true
 bones/17/position = Vector3(-1.7049388e-08, 0.32181835, 6.8212103e-12)
-bones/17/rotation = Quaternion(1.2700597e-06, 2.3576956e-09, -0.004545312, 0.9999897)
+bones/17/rotation = Quaternion(0, 0, 0, 1)
 bones/17/scale = Vector3(1, 0.9999999, 0.99999994)
 bones/18/name = "Bone.018"
 bones/18/parent = 17
 bones/18/rest = Transform3D(0.99999994, 2.216584e-10, 2.9106596e-11, -2.2165839e-10, 1, 1.7202063e-10, -2.9106596e-11, -1.7202065e-10, 0.99999994, -7.335996e-09, 0.32180494, -4.8601123e-11)
 bones/18/enabled = true
 bones/18/position = Vector3(-7.335996e-09, 0.32180494, -4.8601123e-11)
-bones/18/rotation = Quaternion(-8.6010324e-11, 1.45533e-11, -1.108292e-10, 1)
+bones/18/rotation = Quaternion(0, 0, 0, 1)
 bones/18/scale = Vector3(0.99999994, 1, 0.99999994)
 bones/19/name = "Bone.019"
 bones/19/parent = 1
