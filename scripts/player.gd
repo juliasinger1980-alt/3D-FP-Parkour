@@ -144,6 +144,9 @@ var vault_timer := 0.160
 
 #grappling hook
 var grappling := false
+var grappling_grav := -45.0
+var max_speed_grappling := 90.0
+var grappling_control_mult := 0.10
 var grappling_point: Vector3
 var dir_grappling_point_to_player: Vector3
 var dir_player_to_grappling_point: Vector3
@@ -151,22 +154,19 @@ var distance_grappling_point_to_player: float
 var spring_power := 1.0
 var spring_power_current: float
 var original_distance_grappling_point_to_player: float
-var grappling_grav := -30.0
 var grappling_jump_off_boost := 5.0
 var grappling_jump_off_str := 20.0
 var distance_player_to_grappling_point: float
 var final_target_distance: float
 var target_difference := 4.0
-var max_speed_grappling := 85.0
 var max_grapple_jump_off_speed := 35.0
 var grappling_lerp_str := 11.0
-var grappling_control_mult := 0.05
 var grappling_cooldown := 0.200
 @onready var grappling_cooldown_max = grappling_cooldown
 ##VISUALS
 var rope_points: Array
-var rope_gravity := 4
-var rope_thickness := 0.02
+var rope_gravity := 3
+var rope_thickness := 0.05
 var mesh: ImmediateMesh
 var point_count: float
 var grappling_start_point: Vector3 
@@ -603,13 +603,16 @@ func grappling_visuals(delta):
 			var mid = (p0 + p1) * 0.5
 			var mid_world = $grappling_visuals.to_global(mid)
 			var to_cam = (camera.global_position - mid_world).normalized()
+			var cam_forward = -camera.global_transform.basis.z
 			var direction = (p1 - p0).normalized()
-			var side = direction.cross(to_cam).normalized()
-			side *= rope_thickness
-			var v0 = p0 + side
-			var v1 = p0 - side
-			var v2 = p1 + side
-			var v3 = p1 - side
+			var side1 = direction.cross(cam_forward).normalized()
+			var side2 = direction.cross(side1).normalized()
+			
+			side1 *= rope_thickness
+			var v0 = p0 + side1
+			var v1 = p0 - side1
+			var v2 = p1 + side1
+			var v3 = p1 - side1
 
 			mesh.surface_add_vertex(v0)
 			mesh.surface_add_vertex(v1)
@@ -618,6 +621,21 @@ func grappling_visuals(delta):
 			mesh.surface_add_vertex(v2)
 			mesh.surface_add_vertex(v1)
 			mesh.surface_add_vertex(v3)
+			
+			
+			side2 *= rope_thickness
+			var v0_2 = p0 + side2
+			var v1_2 = p0 - side2 
+			var v2_2 = p1 + side2
+			var v3_2 = p1 - side2
+
+			mesh.surface_add_vertex(v0_2)
+			mesh.surface_add_vertex(v1_2)
+			mesh.surface_add_vertex(v2_2)
+
+			mesh.surface_add_vertex(v2_2)
+			mesh.surface_add_vertex(v1_2)
+			mesh.surface_add_vertex(v3_2)
 			
 		mesh.surface_end()
 		$grappling_visuals.mesh = mesh
@@ -704,6 +722,7 @@ func get_state() -> String:
 
 func animation_handler(delta):
 	if get_state() == "GRAPPLING":
+		hands.visible = false
 		if animation_player.current_animation != "grappling_hold":
 			animation_player.play("grappling")
 			await animation_player.animation_finished
@@ -740,10 +759,8 @@ func animation_handler(delta):
 		if instantiation_swinging_hands:
 			instantiation_swinging_hands.queue_free()
 
-
-	if get_state() != "SWINGING" and get_state() != "VAULTING":
+	if get_state() != "SWINGING" and get_state() != "VAULTING" and get_state() != "GRAPPLING":
 		hands.visible = true
-
 
 	if get_state() == "WALLRUNNING_LEFT":
 		if not animation_player.current_animation == "wallrunning_left":
